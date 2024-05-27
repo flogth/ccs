@@ -11,66 +11,84 @@ module Step {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} where
   _≉_ : Rel A ℓ
   a ≉ b = a ≈ b → ⊥
 
+  data Context : Set ℓ where
+    ∅ : Context
+    _,_ : Context → CCS → Context
+
+  data _∋_ : Context → CCS → Set ℓ where
+    Z : ∀ {Γ A} → (Γ , A) ∋ A
+
+    S_ : ∀ {Γ A B} →
+      Γ ∋ A →
+      (Γ , B) ∋ A
+
   -- one-step relation without `fix`
-  infix 3 _⟨_⟩⇒_
-  data _⟨_⟩⇒_ : CCS → Aτ → CCS → Set ℓ where
-    Prefix : ∀ {α} {P} →
+  infix 3 _⊢_⟨_⟩⇒_
+  data _⊢_⟨_⟩⇒_ : Context → CCS → Aτ → CCS → Set ℓ where
+    Prefix : ∀ {α} {P} {Γ} →
     ------------------------
-      α ∙ P ⟨ α ⟩⇒ P
+      Γ ⊢ α ∙ P ⟨ α ⟩⇒ P
 
-    Sumₗ : ∀ {α} {P Q P'} →
-      P ⟨ α ⟩⇒ P' →
+    Sumₗ : ∀ {α} {P Q P'} {Γ} →
+      Γ ⊢ P ⟨ α ⟩⇒ P' →
       ---------------------
-      (P ＋ Q) ⟨ α ⟩⇒ P'
+      Γ ⊢ (P ＋ Q) ⟨ α ⟩⇒ P'
 
-    Sumᵣ : ∀ {α} {P Q Q'} →
-      Q ⟨ α ⟩⇒ Q' →
+    Sumᵣ : ∀ {α} {P Q Q'} {Γ} →
+      Γ ⊢ Q ⟨ α ⟩⇒ Q' →
       ------------------
-      (P ＋ Q) ⟨ α ⟩⇒ Q'
+      Γ ⊢ (P ＋ Q) ⟨ α ⟩⇒ Q'
 
-    Compₗ : ∀ {α} {P Q P'} →
-      P ⟨ α ⟩⇒ P' →
+    Compₗ : ∀ {α} {P Q P'} {Γ} →
+      Γ ⊢ P ⟨ α ⟩⇒ P' →
       -------------------
-      P ∣ Q ⟨ α ⟩⇒ P' ∣ Q
+      Γ ⊢ P ∣ Q ⟨ α ⟩⇒ P' ∣ Q
 
-    Compᵣ : ∀ {α} {P Q Q'} →
-      Q ⟨ α ⟩⇒ Q' →
+    Compᵣ : ∀ {α} {P Q Q'} {Γ} →
+      Γ ⊢ Q ⟨ α ⟩⇒ Q' →
       -------------------
-      P ∣ Q ⟨ α ⟩⇒ P ∣ Q'
+      Γ ⊢ P ∣ Q ⟨ α ⟩⇒ P ∣ Q'
 
-    Sync : ∀ {a : A} {P P' Q Q'} →
-      P ⟨ act a ⟩⇒ P' →
-      Q ⟨ act (comp a)  ⟩⇒ Q' →
+    Sync : ∀ {a : A} {P P' Q Q'} {Γ} →
+      Γ ⊢ P ⟨ act a ⟩⇒ P' →
+      Γ ⊢ Q ⟨ act (comp a)  ⟩⇒ Q' →
       --------------------
-      P ∣ Q ⟨ τ ⟩⇒ P' ∣ Q'
+      Γ ⊢ P ∣ Q ⟨ τ ⟩⇒ P' ∣ Q'
 
-    Res : ∀ {a b : A}  {P P'} →
-      P ⟨ act a ⟩⇒ P' →
+    Res : ∀ {a b : A}  {P P'} {Γ} →
+      Γ ⊢ P ⟨ act a ⟩⇒ P' →
       a ≉  b →
       a ≉ comp b →
       ---------------------------
-      (P ∖ a) ⟨ act a ⟩⇒ (P' ∖ a)
+      Γ ⊢ (P ∖ a) ⟨ act a ⟩⇒ (P' ∖ a)
 
-    Ren : ∀ {a} {φ : Renaming} {P P'} →
-      P ⟨ act a ⟩⇒ P' →
+    Ren : ∀ {a} {φ : Renaming} {P P'} {Γ} →
+      Γ ⊢ P ⟨ act a ⟩⇒ P' →
       -------------------------------------
-      (P [ φ ]) ⟨ act (φ $ a) ⟩⇒ (P' [ φ ])
+      Γ ⊢ (P [ φ ]) ⟨ act (φ $ a) ⟩⇒ (P' [ φ ])
 
-  infix 3 _⟨_⟩fix⇒_
-  data _⟨_⟩fix⇒_ : CCS → Aτ → CCS → Set ℓ where
-    Step : ∀ {α} {P P'} →
-      P ⟨ α ⟩⇒ P' →
-      --------------
-      P ⟨ α ⟩fix⇒ P'
-    Fix : ∀ {α} {P P'} →
-      (P [ zero ↦ fix P ]) ⟨ α ⟩fix⇒ P' →
-      fix P ⟨ α ⟩fix⇒ P'
+  -- usual semantics of fixpoint
+  infix 3 _⊢_⟨_⟩fix⇒_
+  data _⊢_⟨_⟩fix⇒_ : Context → CCS → Aτ → CCS → Set ℓ where
+    Step : ∀ {α} {P P'} {Γ} →
+      Γ ⊢ P ⟨ α ⟩⇒ P' →
+      ------------------
+      Γ ⊢ P ⟨ α ⟩fix⇒ P'
 
-  infix 3 _⟨_⟩fix'⇒_
-  data _⟨_⟩fix'⇒_ : CCS → Aτ → CCS → Set ℓ where
-    Step' : ∀ {α} {P P'} →
-      P ⟨ α ⟩⇒ P' →
-      P ⟨ α ⟩fix'⇒ P'
-    Fix' : ∀ {α} {P P'} →
-      P ⟨ α ⟩fix'⇒ P' →
-      fix P ⟨ α ⟩fix'⇒ (P' [ zero ↦  fix P ])
+    Fix : ∀ {α} {P P'} {Γ} →
+      Γ ⊢ (P [ zero ↦ fix P ]) ⟨ α ⟩fix⇒ P' →
+      -------------------------------------
+      Γ ⊢ fix P ⟨ α ⟩fix⇒ P'
+
+  -- alternative semantics of fixpoint
+  infix 3 _⊢_⟨_⟩fix'⇒_
+  data _⊢_⟨_⟩fix'⇒_ : Context → CCS → Aτ → CCS → Set ℓ where
+    Step' : ∀ {α} {P P'} {Γ} →
+      Γ ⊢ P ⟨ α ⟩⇒ P' →
+      -------------------
+      Γ ⊢ P ⟨ α ⟩fix'⇒ P'
+
+    Fix' : ∀ {α} {P P'} {Γ} →
+      (Γ , fix P) ⊢ P ⟨ α ⟩fix'⇒ P' →
+      -------------------------------------------
+      Γ ⊢ fix P ⟨ α ⟩fix'⇒ (P' [ zero ↦  fix P ])
