@@ -53,6 +53,30 @@ module Syntax {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} whe
   open import Data.Product
   open import Relation.Nullary.Decidable
 
+  data closed : ℕ → CCS → Set ℓ where
+    ∅-closed : ∀ {n} → closed n ∅
+    var-closed : ∀ {n x} → x < n → closed n (# x)
+    act-closed : ∀ {n} {α} {P} →
+      closed n P →
+      closed n (α ∙ P)
+    ＋-closed : ∀ {n} {P Q} →
+      closed n P →
+      closed n Q →
+      closed n (P ＋ Q)
+    ∣-closed : ∀ {n} {P Q} →
+      closed n P →
+      closed n Q →
+      closed n (P ∣ Q)
+    res-closed : ∀ {n} {a} {P} →
+      closed n P →
+      closed n (P ∖ a)
+    ren-closed : ∀ {n} {φ} {P} →
+      closed n P →
+      closed n (P [ φ ])
+    fix-closed : ∀ {n} {P} →
+      closed (suc n) P →
+      closed n (fix P)
+
   guarded : CCS → Set
   guarded ∅ = ⊤
   guarded (# x) = ⊥
