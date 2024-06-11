@@ -1,6 +1,7 @@
 open import Level renaming (suc to lsuc)
 open import Relation.Binary.Core using (Rel)
 open import Data.Sum
+open import Data.Empty
 
 module Action {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) where
 
@@ -20,6 +21,9 @@ module Action {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) where
 
     act : A → Aτ
     act = inj₁
+
+    _≉_ : Rel A ℓ
+    a ≉ b = a ≈ b → ⊥
 
     _≈ᶜ_ : A → A → Set ℓ
     a ≈ᶜ a' = a ≈ a' ⊎ a ≈ (comp a')
