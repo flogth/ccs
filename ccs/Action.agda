@@ -21,6 +21,9 @@ module Action {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) where
     act : A → Aτ
     act = inj₁
 
+    _≈ᶜ_ : A → A → Set ℓ
+    a ≈ᶜ a' = a ≈ a' ⊎ a ≈ (comp a')
+
   module Renaming (Action : Act) where
     open Act Action
     record IsRenaming (f : A → A) : Set ℓ where
@@ -33,5 +36,11 @@ module Action {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) where
         f : A → A
         isRenaming : IsRenaming f
 
+    -- apply a renaming
     _$_ : Renaming → A → A
     f $ a = Renaming.f f a
+
+    -- lift (A → A) to (Aτ → Aτ)
+    ⟨_⟩Aτ : Renaming → Aτ → Aτ
+    ⟨ φ ⟩Aτ (inj₁ a) = inj₁ (φ $ a)
+    ⟨ φ ⟩Aτ (inj₂ tau) = inj₂ tau
