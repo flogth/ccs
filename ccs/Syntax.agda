@@ -5,94 +5,72 @@ module Syntax {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} whe
   open Act Action
   open Action.Renaming A _≈_ Action
   open import Data.Nat public
+  open import Data.Fin using (Fin ; raise)
 
-  infix 6 _∣_
-  infix 6 _＋_
-  infix 5 _∙_
+  infix 20 _∣_
+  infix 20 _＋_
+  infix 25 _∙_
 
-  data CCS : Set ℓ where
-    ∅   : CCS
-    #_  : ℕ → CCS
-    _∙_ : Aτ → CCS → CCS
-    _＋_ : CCS → CCS → CCS
-    _∣_ : CCS → CCS → CCS
-    _∖_ : CCS → A → CCS
-    _[_] : CCS → Renaming → CCS
-    fix : CCS → CCS
+  data Proc : ℕ → Set ℓ where
+    ∅ : ∀ {n} → Proc n
 
-  -- de Bruijn machinery
-  lift_by_above_ : CCS → ℕ → ℕ → CCS
-  lift ∅ by n above i = ∅
-  lift # x by n above i with compare x i
-  ... | less _ _ = # x
-  ... | equal _ = # x
-  ... | greater _ _ = # (x + i)
-  lift α ∙ P by n above i = α ∙ (lift P by n above i )
-  lift P ＋ Q by n above i = (lift P by n above i) ＋ (lift Q by n above i)
-  lift P ∣ Q by n above i = (lift P by n above i) ∣ (lift Q by n above i)
-  lift P ∖ a by n above i = (lift P by n above i) ∖ a
-  lift (P [ f ]) by n above i = (lift P by n above i) [ f ]
-  lift fix P by n above i = fix (lift P by n above (suc i))
+    #_ : ∀ {n} →
+      (x : Fin n) →
+      Proc n
 
-  _[_↦_] : CCS → ℕ → CCS → CCS
-  ∅ [ n ↦ Q ] = ∅
-  (# x) [ n ↦ R ] with compare x n
-  ... | less _ _ = # x
-  ... | equal _ = lift R by x above zero
-  ... | greater _ k = # (n + k)
-  (α ∙ P) [ n ↦ R ] = α ∙ (P [ n ↦ R ])
-  (P ＋ Q) [ n ↦ R ] = (P [ n ↦ R ]) ＋ (Q [ n ↦ R ])
-  (P ∣ Q) [ n ↦ R ] = (P [ n ↦ R ]) ∣ (Q [ n ↦ R ])
-  (P ∖ a) [ n ↦ R ] = (P [ n ↦ R ]) ∖ a
-  (P [ f ]) [ n ↦ R ] = (P [ n ↦ R ]) [ f ]
-  fix P [ n ↦ R ] = fix (P [ n ↦ R ])
+    _∙_ : ∀ {n} →
+      (α : Aτ) →
+      (P : Proc n) →
+      Proc n
+    _＋_ : ∀ {n} →
+      (P Q : Proc n) →
+      Proc n
+    _∣_ : ∀ {n} →
+      (P Q : Proc n) →
+      Proc n
+    _∖_ : ∀ {n} →
+      (P : Proc n) →
+      (a : A) →
+      Proc n
+    _[_] : ∀ {n} →
+      (P : Proc n) →
+      (φ : Renaming) →
+      Proc n
+    fix : ∀ {n} →
+      (P : Proc (suc n)) →
+      Proc n
 
+  ext : ∀ {n m} → (ρ : Fin n → Fin m) → Fin (suc n) → Fin (suc m)
+  ext ρ Fin.zero = Fin.zero
+  ext ρ (Fin.suc x) = Fin.suc (ρ x)
 
-  open import Data.Unit
-  open import Data.Empty
-  open import Data.Product
-  open import Relation.Nullary.Decidable
+  rename : ∀ {n m} → (ρ : Fin n → Fin m) → Proc n → Proc m
+  rename ρ ∅ = ∅
+  rename ρ (# x) = # (ρ x)
+  rename ρ (α ∙ P) = α ∙ (rename ρ P)
+  rename ρ (P ＋ Q) = (rename ρ P) ＋ (rename ρ Q)
+  rename ρ (P ∣ Q) = (rename ρ P) ∣ (rename ρ Q)
+  rename ρ (P ∖ a) = (rename ρ P) ∖ a
+  rename ρ (P [ φ ]) = (rename ρ P) [ φ ]
+  rename ρ (fix P) = fix (rename (ext ρ) P)
 
-  data closed : ℕ → CCS → Set ℓ where
-    ∅-closed : ∀ {n} → closed n ∅
-    var-closed : ∀ {n x} → x < n → closed n (# x)
-    act-closed : ∀ {n} {α} {P} →
-      closed n P →
-      closed n (α ∙ P)
-    ＋-closed : ∀ {n} {P Q} →
-      closed n P →
-      closed n Q →
-      closed n (P ＋ Q)
-    ∣-closed : ∀ {n} {P Q} →
-      closed n P →
-      closed n Q →
-      closed n (P ∣ Q)
-    res-closed : ∀ {n} {a} {P} →
-      closed n P →
-      closed n (P ∖ a)
-    ren-closed : ∀ {n} {φ} {P} →
-      closed n P →
-      closed n (P [ φ ])
-    fix-closed : ∀ {n} {P} →
-      closed (suc n) P →
-      closed n (fix P)
+  exts : ∀ {n m} → (σ : Fin n → Proc m) → Fin (suc n) → Proc (suc m)
+  exts σ Fin.zero = # Fin.zero
+  exts σ (Fin.suc x) = rename Fin.suc (σ x)
 
-  guarded : CCS → Set
-  guarded ∅ = ⊤
-  guarded (# x) = ⊥
-  guarded (a ∙ P) = ⊤
-  guarded (P ＋ Q) = (guarded P) × (guarded Q)
-  guarded (P ∣ Q) = (guarded P) × (guarded Q)
-  guarded (P ∖ a) = guarded P
-  guarded (P [ φ ]) = guarded P
-  guarded (fix P) = guarded P
+  subst : ∀ {n m} → (σ : Fin n → Proc m) → Proc n → Proc m
+  subst σ ∅ = ∅
+  subst σ (# x) = σ x
+  subst σ (α ∙ P) = α ∙ subst σ P
+  subst σ (P ＋ Q) = subst σ P ＋ subst σ Q
+  subst σ (P ∣ Q) = subst σ P ∣ subst σ Q
+  subst σ (P ∖ a) = subst σ P ∖ a
+  subst σ (P [ φ ]) = subst σ P [ φ ]
+  subst σ (fix P) = fix (subst (exts σ) P)
 
-  guarded-dec : ∀ (P : CCS) → Dec (guarded P)
-  guarded-dec ∅ = yes tt
-  guarded-dec (# x) = no (λ i → i)
-  guarded-dec (A ∙ P) = yes tt
-  guarded-dec (P ＋ Q) = (guarded-dec P) ×-dec (guarded-dec Q)
-  guarded-dec (P ∣ Q) = (guarded-dec P) ×-dec (guarded-dec Q)
-  guarded-dec (P ∖ a) = guarded-dec P
-  guarded-dec (P [ φ ]) = guarded-dec P
-  guarded-dec (fix P) = guarded-dec P
+  _[0↦_] : ∀ {n} → Proc (suc n) → Proc n → Proc n
+  _[0↦_] {n} P Q = subst σ P
+    where
+      σ : Fin (suc n) → Proc n
+      σ Fin.zero = Q
+      σ (Fin.suc x) = # x
