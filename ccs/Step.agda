@@ -9,7 +9,7 @@ module Step {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} where
 
   infix 10 _⟨_⟩⇒_
 
-  data _⟨_⟩⇒_ : {n : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc n) → Set ℓ where
+  data _⟨_⟩⇒_ : {n m : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc m) → Set ℓ where
     Prefix : ∀ {n} {α : Aτ} {P : Proc n} →
       (α ∙ P) ⟨ α ⟩⇒ P
 
@@ -39,17 +39,17 @@ module Step {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} where
       ----------------------------------------
       (P ∣ Q) ⟨ τ ⟩⇒ (P' ∣ Q')
 
-    Res : ∀ {n} {a b : A} {P P' : Proc n} →
-      P ⟨ act a ⟩⇒ P' →
-      a ≉ b →
-      a ≉ (comp b) →
+    Res : ∀ {n} {α} {a : A} {P P' : Proc n} →
+      P ⟨ α ⟩⇒ P' →
+      α ≢ act a →
+      α ≢ act (comp a) →
       ----------------------------------------
       (P ∖ a) ⟨ act a ⟩⇒ (P' ∖ a)
 
-    Ren : ∀ {n} {a : A} {φ : Renaming} {P P' : Proc n} →
-      P ⟨ act a ⟩⇒ P' →
+    Ren : ∀ {n} {α} {φ : Renaming} {P P' : Proc n} →
+      P ⟨ α ⟩⇒ P' →
       ----------------------------------------
-      (P [ φ ]) ⟨ act (φ $ a) ⟩⇒ (P' [ φ ])
+      (P [ φ ]) ⟨ ⟨ φ ⟩Aτ α ⟩⇒ (P' [ φ ])
 
   -- usual operational semantics of fixpoint
   infix 10 _⟨_⟩fix⇒_
@@ -66,7 +66,7 @@ module Step {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} where
 
   -- adapted fixpoint semantics
   infix 10 _⟨_⟩fix'⇒_
-  data _⟨_⟩fix'⇒_ : {n : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc n) → Set ℓ where
+  data _⟨_⟩fix'⇒_ : {n m : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc m) → Set ℓ where
     Step' : ∀ {n} {α : Aτ} {P P' : Proc n} →
       P ⟨ α ⟩⇒ P' →
       ----------------------------------------
