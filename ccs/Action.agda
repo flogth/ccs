@@ -2,8 +2,10 @@ open import Level renaming (suc to lsuc)
 open import Relation.Binary.Core using (Rel)
 open import Data.Sum
 open import Data.Empty
+open import Relation.Binary.Definitions using (Decidable)
+open import Relation.Nullary.Decidable
 
-module Action {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) where
+module Action {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) (dec : Decidable _≈_) where
 
   data Tau : Set where
     tau : Tau
@@ -27,6 +29,13 @@ module Action {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) where
 
     _≈ᶜ_ : A → A → Set ℓ
     a ≈ᶜ a' = a ≈ a' ⊎ a ≈ (comp a')
+
+    decᶜ : Decidable _≈ᶜ_
+    decᶜ x y with dec x y
+    ... | no ¬a with dec x (comp y)
+    decᶜ x y | no ¬a | no ¬b = no (λ {(inj₁ p) → ¬a p ; (inj₂ q) → ¬b q})
+    decᶜ x y | no ¬a | yes b = yes (inj₂ b)
+    decᶜ x y | yes a = yes (inj₁ a)
 
   module Renaming (Action : Act) where
     open Act Action
