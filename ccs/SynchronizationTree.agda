@@ -3,9 +3,9 @@ open import Codata.Sized.Colist renaming (map to cmap)
 open import Codata.Sized.Thunk using (force)
 open import Level using (_⊔_)
 open import Size
+open import Relation.Unary.Sized
 
 module SynchronizationTree where
-open Codata.Sized.Colist public
 
 mutual
   record Tree {ℓ ℓ'} (X : Set ℓ) (A : Set ℓ') (i : Size) : Set (ℓ ⊔ ℓ') where
@@ -19,22 +19,21 @@ mutual
 
 open Tree
 
-actˢ : ∀ {ℓ ℓ'} {X : Set ℓ} {A : Set ℓ'} {i : Size} → A → Tree X A (↑ i) → Tree X A (↑ i)
-actˢ a T = λ where .children → [ action a T ]
-
-interleave : ∀ {ℓ} {i : Size} {A : Set ℓ} → Colist A i → Colist A i → Colist A i
+interleave : ∀ {ℓ} {A : Set ℓ} → ∀[ Colist A ⇒ Colist A ⇒ Colist A ]
 interleave [] ys = ys
 interleave (x ∷ xs) ys = x ∷ λ where .force → interleave ys (force xs)
 
--- shallow concatenation
-_++ˢ_ : ∀ {ℓ ℓ'} {A : Set ℓ} {X : Set ℓ'} {i : Size}  → Tree X A (↑ i)  → Tree X A (↑ i) → Tree X A (↑ i)
-l ++ˢ r = λ where .children → interleave (children l) (children r)
+module _ {ℓa ℓx} {A : Set ℓa} {X : Set ℓx} where
 
-map′ : ∀ {i} {ℓ ℓ'} {X : Set ℓ} {A : Set ℓ'} {B : Set ℓ'} →
-       (A → B) → SubTree X A i → SubTree X B i
-map′ σ (name x) = name x
-map′ σ (action a p) = action (σ a) λ where .children → cmap (map′ σ) (children p)
+  actˢ : A → ∀[ Tree X A ⇒ Tree X A ]
+  actˢ a T = λ where .children → [ action a T ]
 
-tmap : ∀ {i} {ℓ ℓ'} {X : Set ℓ} {A : Set ℓ'} {B : Set ℓ'} →
-       (A → B) → Tree X A i → Tree X B i
-children (tmap σ t) = cmap (map′ σ) (children t)
+  _++ˢ_ : ∀[ Tree X A ⇒ Tree X A ⇒ Tree X A ]
+  l ++ˢ r = λ where .children → interleave (children l) (children r)
+
+  tmap′ : ∀ {ℓb} {B : Set ℓb} → (A → B) → ∀[ SubTree X A ⇒ SubTree X B ]
+  tmap′ σ (name x) = name x
+  tmap′ σ (action a p) = action (σ a) λ where .children → cmap (tmap′ σ) (children p)
+
+  tmap : ∀ {ℓb} {B : Set ℓb} → (A → B) → ∀[ Tree X A ⇒ Tree X B ]
+  children (tmap σ t) = cmap (tmap′ σ) (children t)
