@@ -3,13 +3,14 @@ open import Relation.Binary.Core using (Rel)
 open import Data.Fin
 open import Data.Product
 open import Relation.Binary.PropositionalEquality using (_≡_ ; _≢_)
+open import Relation.Binary.Definitions using (Decidable)
 
-module Step {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} where
+module Step {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {dec : Decidable _≈_} {Action : Act A _≈_ dec} where
   open Act Action
-  open Action.Renaming A _≈_ Action
+  open Action.Renaming A _≈_ dec Action
   import Syntax
-  open Syntax A _≈_ {Action}
-  open import Guarded A _≈_ {Action}
+  open Syntax A _≈_ {dec} {Action}
+  open import Guarded A _≈_ {dec} {Action}
 
   infix 10 _⟨_⟩⇒_
 
@@ -82,17 +83,15 @@ module Step {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} where
       (fix P) ⟨ α ⟩fix'⇒ (P' [0↦ (fix P) ])
 
 
-  guarded-step : ∀ {n} → (P : Proc n) → guarded P →
+  guarded-step : ∀ {n} → {P : Proc n} → guarded P 0 →
                  Σ Aτ λ α → Σ (Proc n) λ P' → P ⟨ α ⟩⇒ P'
-  guarded-step (# x) ()
-  guarded-step (α ∙ P) (guarded-∙ x) = α , P , Prefix
-  guarded-step (P ＋ Q) (guarded-＋ guardP guardQ) = {!!}
-  guarded-step (P ∣ Q) (guarded-∣ guardP guardQ) = {!!}
-  guarded-step (P ∖ a) (guarded-∖ guard) with guarded-step P {!!}
-  ... | α , P' , step = {!!}
-  guarded-step (P [ φ ]) (guarded-ren guard) with guarded-step P guard
-  ... | α , P' , step = ⟨ φ ⟩Aτ α , (P' [ φ ]) , Ren step
-  guarded-step (fix P) (guarded-fix guard) = {!!}
+  guarded-step guarded-∅ = {!!} , {!!} , {!!}
+  guarded-step (guarded-＋ p q) = {!!}
+  guarded-step (guarded-∣ p q) = {!!}
+  guarded-step (guarded-∖ guard) = {!!}
+  guarded-step (guarded-ren guard) = {!!}
+  guarded-step (guarded-∙ guard) = {!!}
+  guarded-step (guarded-fix guard) = {!!}
 
   -- Equivalence of the two semantics
 
