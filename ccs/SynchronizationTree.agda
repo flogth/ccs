@@ -14,6 +14,7 @@ mutual
       children : {j : Size< i} → Colist (SubTree X A j) j
 
   data SubTree {ℓ ℓ'} (X : Set ℓ) (A : Set ℓ') : Size → Set (ℓ ⊔ ℓ') where
+    bot : {i : Size} → SubTree X A i
     name : {i : Size} → X → SubTree X A i
     action : {i : Size} → A → Tree X A i → SubTree X A i
 
@@ -32,6 +33,7 @@ module _ {ℓa ℓx} {A : Set ℓa} {X : Set ℓx} where
   l ++ˢ r = λ where .children → interleave (children l) (children r)
 
   tmap′ : ∀ {ℓb} {B : Set ℓb} → (A → B) → ∀[ SubTree X A ⇒ SubTree X B ]
+  tmap′ σ (bot) = bot
   tmap′ σ (name x) = name x
   tmap′ σ (action a p) = action (σ a) λ where .children → cmap (tmap′ σ) (children p)
 

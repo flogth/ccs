@@ -14,41 +14,40 @@ module Guarded {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {dec : Decidable _≈_} {
   import Syntax
   open Syntax A _≈_ {dec} {Action}
 
-  data guarded {n} : (P : Proc n) → (m : ℕ) → Set ℓ where
-    guarded-∅ : ∀ {m} → guarded ∅ m
+  data guarded {n} : (P : Proc n)  → Set ℓ where
+    guarded-∅ : guarded ∅ 
 
-    guarded-＋ : ∀ {P Q} {m} →
-      guarded P m →
-      guarded Q m →
-      guarded (P ＋ Q) m
+    guarded-＋ : ∀ {P Q} →
+      guarded P →
+      guarded Q →
+      guarded (P ＋ Q)
 
-    guarded-∣ : ∀ {P Q} {m} →
-      guarded P m →
-      guarded Q m →
-      guarded (P ∣ Q) m
+    guarded-∣ : ∀ {P Q} →
+      guarded P →
+      guarded Q →
+      guarded (P ∣ Q)
 
-    guarded-∖ : ∀ {P} {α} {m} →
-      guarded P m →
-      guarded (P ∖ α) m
+    guarded-∖ : ∀ {P} {α} →
+      guarded P →
+      guarded (P ∖ α)
 
-    guarded-ren : ∀ {P} {φ} {m} →
-      guarded P m →
-      guarded (P [ φ ]) m
+    guarded-ren : ∀ {P} {φ} →
+      guarded P →
+      guarded (P [ φ ])
 
-    guarded-∙ : ∀ {α} {P} {m} →
-      guarded P 0 →
-      guarded (α ∙ P) m
+    guarded-∙ : ∀ {α} {P} →
+      guarded (α ∙ P)
 
-    guarded-fix : ∀ {P} {m} →
-      guarded P (suc m) →
-      guarded (fix P) m
+    guarded-fix : ∀ {P} →
+      guarded P →
+      guarded (fix P)
 
-  guarded-subst : ∀ {n} {P : Proc (suc n)} (m : ℕ) {σ : Fin (suc n) → Proc n} →
-                  guarded P m → guarded (subst σ P) m
-  guarded-subst m guarded-∅ = guarded-∅
-  guarded-subst m (guarded-＋ p q) = guarded-＋ (guarded-subst m p) (guarded-subst m q)
-  guarded-subst m (guarded-∣ p q) = guarded-∣ (guarded-subst m p) (guarded-subst m q)
-  guarded-subst m (guarded-∖ x) = guarded-∖ (guarded-subst m x)
-  guarded-subst m (guarded-ren x) = guarded-ren (guarded-subst m x)
-  guarded-subst m (guarded-∙ x) = guarded-∙ (guarded-subst 0 x)
-  guarded-subst m (guarded-fix x) = guarded-fix (guarded-subst (suc m) x)
+  -- guarded-subst : ∀ {n} {P : Proc (suc n)} (m : ℕ) {σ : Fin (suc n) → Proc n} →
+  --                 guarded P m → guarded (subst σ P) m
+  -- guarded-subst m guarded-∅ = guarded-∅
+  -- guarded-subst m (guarded-＋ p q) = guarded-＋ (guarded-subst m p) (guarded-subst m q)
+  -- guarded-subst m (guarded-∣ p q) = guarded-∣ (guarded-subst m p) (guarded-subst m q)
+  -- guarded-subst m (guarded-∖ x) = guarded-∖ (guarded-subst m x)
+  -- guarded-subst m (guarded-ren x) = guarded-ren (guarded-subst m x)
+  -- guarded-subst m (guarded-∙ x) = guarded-∙ (guarded-subst 0 x)
+  -- guarded-subst m (guarded-fix x) = guarded-fix (guarded-subst (suc m) x)
