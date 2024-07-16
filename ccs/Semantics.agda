@@ -33,12 +33,29 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
       go (bot ∷ xs) (name x ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
       go (bot ∷ xs) (action x x₁ ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
       go (name x ∷ xs) (bot ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
-      go (name x ∷ xs) (name y ∷ ys) = interleave {!!} {!!}
-      go (name x ∷ xs) (action a t ∷ ys) = {!!}
+      go (name x ∷ xs) (name y ∷ ys)
+        = interleave (name x ∷ λ where .force → go (force xs) (name y ∷ ys))
+                     (name y ∷ λ where .force → go (name x ∷ xs) (force ys))
+      go (name x ∷ xs) (action a t ∷ ys)
+        = interleave (name x ∷ λ where .force → go (force xs) {!!})
+                     ({!!} ∷ λ where .force → go (name x ∷ xs) (force ys))
       go (action a t ∷ xs) (bot ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
-      go (action a t ∷ xs) (name y ∷ ys) = {!!}
-      go (action a t ∷ xs) (action a' t' ∷ ys) = {!!}
-
+      go (action a t ∷ xs) (name y ∷ ys)
+        = interleave ({!!} ∷ λ where .force → go (force xs) (name y ∷ ys))
+                     (name y ∷ λ where .force → go {!!} (force ys))
+      go (action (inj₁ a) t ∷ xs) (action (inj₁ b) t' ∷ ys) with ≈-dec a b
+      ... | no a≉b = action τ (Par t t') ∷ λ where .force → go (force xs) (force ys)
+      ... | yes a≈b = interleave (action (act a) (Par t (actˢ (act b) t')) ∷ λ where .force → go (force xs) (force ys))
+                                 (action (act b) (Par (actˢ (act a) t) t) ∷ λ where .force → go (force xs) (force ys))
+      go (action (inj₁ a) t ∷ xs) (action (inj₂ tau) t' ∷ ys)
+         = interleave (action (act a) (Par t (actˢ τ t')) ∷ λ where .force → go (force xs) (force ys))
+                      (action τ (Par (actˢ (act a) t) t) ∷ λ where .force → go (force xs) (force ys))
+      go (action (inj₂ tau) t ∷ xs) (action (inj₁ b) t' ∷ ys)
+         = interleave (action τ (Par t (actˢ (act b) t')) ∷ λ where .force → go (force xs) (force ys))
+                       (action (act b) (Par (actˢ τ t) t) ∷ λ where .force → go (force xs) (force ys))
+      go (action (inj₂ tau) t ∷ xs) (action (inj₂ tau) t' ∷ ys)
+         = interleave (action τ (Par t (actˢ τ t')) ∷ λ where .force → go (force xs) (force ys))
+                      (action τ (Par (actˢ τ t) t) ∷ λ where .force → go (force xs) (force ys))
 
   Res : {n : ℕ} → (a : A) → ∀[ ST n ⇒ ST n ]
   children (Res {n} a t) = cmap go (children t)
