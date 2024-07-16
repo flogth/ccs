@@ -5,19 +5,17 @@ open import Action
 open import Size
 open import Data.Fin
 open import Data.Sum using (inj₁ ; inj₂)
-open import Relation.Binary.Core using (Rel)
-open import Relation.Binary.Definitions using (Decidable)
+open import Relation.Binary.Definitions using (DecidableEquality)
 open import Relation.Nullary.Decidable
-open import Data.Bool using (true ; false)
 open import Codata.Sized.Colist renaming (map to cmap)
 open import Codata.Sized.Thunk
 open import Relation.Unary.Sized
 
-module _ {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {dec : Decidable _≈_} {Action : Act A _≈_ dec} where
+module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
   import Syntax
-  open Syntax A _≈_  {dec} {Action}
-  open Action.Renaming A _≈_ dec Action
+  open Syntax A {dec} {Action}
+  open Action.Renaming A dec Action
   open Tree
 
   ST : (n : ℕ) → SizedSet ℓ
@@ -48,7 +46,7 @@ module _ {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {dec : Decidable _≈_} {Action
       go : ∀[ SubTree (Fin n) Aτ ⇒ SubTree (Fin n) Aτ ]
       go bot = bot
       go (name x) = name x
-      go (action (inj₁ a') t) with decᶜ a a'
+      go (action (inj₁ a') t) with dec a a'
       ... | no ¬p = action (inj₁ a') (Res a t)
       ... | yes p = bot
       go (action (inj₂ tau) t) = action τ (Res a t)

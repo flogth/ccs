@@ -2,15 +2,16 @@ open import Action
 open import Relation.Binary.Core using (Rel)
 open import Data.Fin
 open import Data.Product
-open import Relation.Binary.PropositionalEquality using (_≡_ ; _≢_)
-open import Relation.Binary.Definitions using (Decidable)
+open import Relation.Binary.PropositionalEquality using (_≡_ ; _≢_ ; sym) renaming (subst to ≡-subst)
+open import Relation.Binary.Definitions using (DecidableEquality)
+open import Data.List using (List; _∷_ ; []; _++_; map)
 
-module Step {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {dec : Decidable _≈_} {Action : Act A _≈_ dec} where
+module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
-  open Action.Renaming A _≈_ dec Action
+  open Action.Renaming A dec Action
   import Syntax
-  open Syntax A _≈_ {dec} {Action}
-  open import Guarded A _≈_ {dec} {Action}
+  open Syntax A {dec} {Action}
+  open import Guarded A {dec} {Action}
 
   infix 10 _⟨_⟩⇒_
 

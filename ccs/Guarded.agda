@@ -6,13 +6,13 @@ open import Data.List.Membership.Propositional
 open import Data.List.Relation.Unary.Any
 open import Level renaming (suc to lsuc)
 open import Data.Fin hiding (_>_ ; #_)
-open import Relation.Binary.Definitions using (Decidable)
+open import Relation.Binary.Definitions using (DecidableEquality)
 
-module Guarded {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {dec : Decidable _≈_} {Action : Act A _≈_ dec} where
+module Guarded {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
-  open Action.Renaming A _≈_ dec Action
+  open Action.Renaming A dec Action
   import Syntax
-  open Syntax A _≈_ {dec} {Action}
+  open Syntax A {dec} {Action}
 
   data guarded {n} : (P : Proc n)  → Set ℓ where
     guarded-∅ : guarded ∅ 

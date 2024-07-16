@@ -1,10 +1,10 @@
 open import Action
 open import Relation.Binary.Core using (Rel)
-open import Relation.Binary.Definitions using (Decidable)
+open import Relation.Binary.Definitions using (DecidableEquality)
 
-module Syntax {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {dec : Decidable _≈_} {Action : Act A _≈_ dec} where
+module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
-  open Action.Renaming A _≈_ dec Action
+  open Action.Renaming A dec Action
   open import Data.Nat public
   open import Data.Fin using (Fin ; raise)
 
