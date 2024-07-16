@@ -59,7 +59,7 @@ module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec}
 
   -- usual operational semantics of fixpoint
   infix 10 _⟨_⟩fix⇒_
-  data _⟨_⟩fix⇒_ : {n : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc n) → Set ℓ where
+  data _⟨_⟩fix⇒_ : {n m : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc m) → Set ℓ where
     Step : ∀ {n} {α : Aτ} {P P' : Proc n} →
       P ⟨ α ⟩⇒ P' →
       ----------------------------------------
@@ -82,57 +82,3 @@ module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec}
       P ⟨ α ⟩fix'⇒ P' →
       ----------------------------------------
       (fix P) ⟨ α ⟩fix'⇒ (P' [0↦ (fix P) ])
-
-
-  guarded-step : ∀ {n} → {P : Proc n} → guarded P 0 →
-                 Σ Aτ λ α → Σ (Proc n) λ P' → P ⟨ α ⟩⇒ P'
-  guarded-step guarded-∅ = {!!} , {!!} , {!!}
-  guarded-step (guarded-＋ p q) = {!!}
-  guarded-step (guarded-∣ p q) = {!!}
-  guarded-step (guarded-∖ guard) = {!!}
-  guarded-step (guarded-ren guard) = {!!}
-  guarded-step (guarded-∙ guard) = {!!}
-  guarded-step (guarded-fix guard) = {!!}
-
-  -- Equivalence of the two semantics
-
-  subst-step-fix : ∀ {n} {α : Aτ} (P : Proc (suc n)) {Q T : Proc  n} →
-    (P [0↦ T ]) ⟨ α ⟩fix⇒ Q →
-    Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩⇒ Q' [0↦ T ]) × (Q ≡ Q' [0↦ T ])
-  subst-step-fix ∅ (Step ())
-  subst-step-fix (# zero) {Q = Q} (Step x) = subst-step-fix {!!} {!x!}
-  subst-step-fix (# zero) {Q = Q} (Fix x) = {!!}
-  subst-step-fix (# suc n) x = {!!}
-  subst-step-fix (α ∙ P) x = {!!}
-  subst-step-fix (P ＋ Q) x = {!!}
-  subst-step-fix (P ∣ Q) x = {!!}
-  subst-step-fix (P ∖ a) x = {!!}
-  subst-step-fix (P [ φ ]) x = {!!}
-  subst-step-fix (fix P) x = {!!}
-
-  fix-equiv-to : ∀ {n} {α : Aτ} {P P' : Proc n} →
-    (s : P ⟨ α ⟩fix⇒ P') →
-    P ⟨ α ⟩fix'⇒ P'
-  fix-equiv-to (Step s) = Step' s
-  fix-equiv-to (Fix {P = ∅} (Step ()))
-  fix-equiv-to (Fix {P = # zero} s) = fix-equiv-to s
-  fix-equiv-to (Fix {P = Syntax.# suc x} (Step ()))
-  fix-equiv-to (Fix {P = α ∙ P} {P' = P'} (Step s)) = {!!}
-  fix-equiv-to (Fix {P = P ＋ Q} s) = {!!}
-  fix-equiv-to (Fix {P = P ∣ Q} s) = {!!}
-  fix-equiv-to (Fix {P = P ∖ a} s) = {!!}
-  fix-equiv-to (Fix {P = P [ φ ]} s) = {!!}
-  fix-equiv-to (Fix {P = fix P} s) = fix-equiv-to {!!}
-
-  fix-equiv-from : ∀ {n} {α : Aτ} {P P' : Proc n} →
-    (s : P ⟨ α ⟩fix'⇒ P') →
-    P ⟨ α ⟩fix⇒ P'
-  fix-equiv-from (Step' s) = Step s
-  fix-equiv-from (Fix' {P = ∅} (Step' ()))
-  fix-equiv-from (Fix' {P = # x} s) = {!!}
-  fix-equiv-from (Fix' {P = α ∙ P} s) = {!!}
-  fix-equiv-from (Fix' {P = P ＋ Q} s) = {!!}
-  fix-equiv-from (Fix' {P = P ∣ Q} s) = {!!}
-  fix-equiv-from (Fix' {P = P ∖ a} s) = {!!}
-  fix-equiv-from (Fix' {P = P [ φ ]} s) = {!!}
-  fix-equiv-from (Fix' {P = fix P} s) = {!!}
