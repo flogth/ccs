@@ -69,9 +69,9 @@ module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A de
   subst σ (P [ φ ]) = subst σ P [ φ ]
   subst σ (fix P) = fix (subst (exts σ) P)
 
+  σ : {n : ℕ} → Proc n → Fin (suc n) → Proc n
+  σ Q Fin.zero = Q
+  σ Q (Fin.suc x) = # x
+
   _[0↦_] : ∀ {n} → Proc (suc n) → Proc n → Proc n
-  _[0↦_] {n} P Q = subst σ P
-    where
-      σ : Fin (suc n) → Proc n
-      σ Fin.zero = Q
-      σ (Fin.suc x) = # x
+  _[0↦_] {n} P Q = subst (σ Q) P

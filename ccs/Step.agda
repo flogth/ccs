@@ -15,7 +15,7 @@ module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec}
 
   infix 10 _⟨_⟩⇒_
 
-  data _⟨_⟩⇒_ : {n m : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc m) → Set ℓ where
+  data _⟨_⟩⇒_ : {n : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc n) → Set ℓ where
     Prefix : ∀ {n} {α : Aτ} {P : Proc n} →
       (α ∙ P) ⟨ α ⟩⇒ P
 
@@ -59,7 +59,7 @@ module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec}
 
   -- usual operational semantics of fixpoint
   infix 10 _⟨_⟩fix⇒_
-  data _⟨_⟩fix⇒_ : {n m : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc m) → Set ℓ where
+  data _⟨_⟩fix⇒_ : {n : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc n) → Set ℓ where
     Step : ∀ {n} {α : Aτ} {P P' : Proc n} →
       P ⟨ α ⟩⇒ P' →
       ----------------------------------------
@@ -72,7 +72,7 @@ module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec}
 
   -- adapted fixpoint semantics
   infix 10 _⟨_⟩fix'⇒_
-  data _⟨_⟩fix'⇒_ : {n m : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc m) → Set ℓ where
+  data _⟨_⟩fix'⇒_ : {n : ℕ} → (P : Proc n) → (α : Aτ) → (Q : Proc n) → Set ℓ where
     Step' : ∀ {n} {α : Aτ} {P P' : Proc n} →
       P ⟨ α ⟩⇒ P' →
       ----------------------------------------
