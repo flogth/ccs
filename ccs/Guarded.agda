@@ -42,12 +42,12 @@ module Guarded {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A d
       guarded P →
       guarded (fix P)
 
-  -- guarded-subst : ∀ {n} {P : Proc (suc n)} (m : ℕ) {σ : Fin (suc n) → Proc n} →
-  --                 guarded P m → guarded (subst σ P) m
-  -- guarded-subst m guarded-∅ = guarded-∅
-  -- guarded-subst m (guarded-＋ p q) = guarded-＋ (guarded-subst m p) (guarded-subst m q)
-  -- guarded-subst m (guarded-∣ p q) = guarded-∣ (guarded-subst m p) (guarded-subst m q)
-  -- guarded-subst m (guarded-∖ x) = guarded-∖ (guarded-subst m x)
-  -- guarded-subst m (guarded-ren x) = guarded-ren (guarded-subst m x)
-  -- guarded-subst m (guarded-∙ x) = guarded-∙ (guarded-subst 0 x)
-  -- guarded-subst m (guarded-fix x) = guarded-fix (guarded-subst (suc m) x)
+
+  guarded-subst : ∀ {n} {P : Proc (suc n)} {σ : Fin (suc n) → Proc n} → guarded P → guarded (subst σ P)
+  guarded-subst guarded-∅ = guarded-∅
+  guarded-subst (guarded-＋ p q) = guarded-＋ (guarded-subst p) (guarded-subst q)
+  guarded-subst (guarded-∣ p q) = guarded-∣ (guarded-subst p) (guarded-subst q)
+  guarded-subst (guarded-∖ x) = guarded-∖ (guarded-subst x)
+  guarded-subst (guarded-ren x) = guarded-ren (guarded-subst x)
+  guarded-subst guarded-∙ = guarded-∙
+  guarded-subst (guarded-fix x) = guarded-fix (guarded-subst x)
