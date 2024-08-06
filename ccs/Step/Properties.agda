@@ -14,6 +14,20 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
 
   -- Equivalence of the two semantics
 
+  subst-swap : ∀ {n} (P : Proc (suc (suc n))) {T : Proc n} →
+                (subst (exts (σ T)) P) [0↦ fix (subst (exts (σ T)) P)] ≡ subst (σ T) (P [0↦ fix P ])
+  subst-swap ∅ = refl
+  subst-swap (# x) = {!!}
+  subst-swap (α ∙ P) {T} = cong (α ∙_) {!!}
+  subst-swap (P ＋ Q) = begin
+    {!!} ≡⟨ {!!} ⟩
+    {!!} ∎
+  subst-swap (P ∣ Q) = {!!}
+  subst-swap (P ∖ a) = {!!}
+  subst-swap (P [ φ ]) = {!!}
+  subst-swap (fix P) = {!!}
+
+  {-# TERMINATING #-}
   subst-step-fix : ∀ {n} {α : Aτ} (P : Proc (suc n)) {Q T : Proc  n} →
     guarded P →
     (P [0↦ T ]) ⟨ α ⟩fix⇒ Q →
@@ -38,9 +52,10 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   ... | P' , Step s , eq = (P' ∖ a) , Step (Res s p q) , cong (λ h → h ∖ a) eq
   subst-step-fix (P [ φ ]) (guarded-ren gP) (Step (Ren x)) with subst-step-fix P gP (Step x)
   ... | P' , Step s , eq = (P' [ φ ]) , Step (Ren s) , cong (λ h → h [ φ ]) eq
-  subst-step-fix (fix P) {Q = Q} {T = T} (guarded-fix gP) (Fix x) with subst-step-fix (subst (exts (σ T)) P) {!!} x
-  ... | P' , s , eq = {!!}
-  
+  subst-step-fix (fix P) {Q = Q} {T = T} (guarded-fix gP) (Fix x) rewrite subst-swap P {T = T} with subst-step-fix (P [0↦ fix P ]) (guarded-subst gP) x
+  ... | P' , s , eq = P' , Fix s , eq
+
+
   fix-equiv-to : ∀ {n} {α : Aτ} {P P' : Proc n} →
     (guarded P) →
     (s : P ⟨ α ⟩fix⇒ P') →
