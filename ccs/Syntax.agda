@@ -75,3 +75,6 @@ module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A de
 
   _[0↦_] : ∀ {n} → Proc (suc n) → Proc n → Proc n
   _[0↦_] {n} P Q = subst (σ Q) P
+
+  _[1↦_] : ∀ {n} → Proc (suc (suc n)) → Proc n → Proc (suc n)
+  _[1↦_] {n} P Q = subst (exts (σ Q)) P
