@@ -48,7 +48,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   fix-equiv-to gP (Step s) = Step' s
   fix-equiv-to {α = α} (guarded-fix gP) (Fix {P = P} s) with subst-step-fix P gP s
   ... | Q' , step , eq = ≡-subst (λ h → fix P ⟨ α ⟩fix'⇒ h) (sym eq) (Fix' (fix-equiv-to gP step))
-  
+
   step-subst : ∀ {n} {α : Aτ} {P P' : Proc (suc n)} {T : Proc n} →
     P ⟨ α ⟩⇒ P' →
     P [0↦ T ] ⟨ α ⟩⇒ P' [0↦ T ]
@@ -61,16 +61,16 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   step-subst (Res x p q) = Res (step-subst x) p q
   step-subst (Ren x) = Ren (step-subst x)
 
-  fix'-subst : ∀ {n} {α : Aτ} {P P' : Proc (suc n)} {T : Proc n} →
-    P ⟨ α ⟩fix'⇒ P' →
-    P [0↦ T ] ⟨ α ⟩fix'⇒ P' [0↦ T ]
-  fix'-subst (Step' x) = Step' (step-subst x)
-  fix'-subst (Fix' x) with fix'-subst x
-  ... | s = Fix' {!s!}
-  
+  fix-subst : ∀ {n} {α : Aτ} {P P' : Proc (suc n)} {T : Proc n} →
+    P ⟨ α ⟩fix⇒ P' →
+    P [0↦ T ] ⟨ α ⟩fix⇒ P' [0↦ T ]
+  fix-subst (Step x) = Step (step-subst x)
+  fix-subst {T = T} (Fix x) with fix-subst {T = T} x
+  ... | p = Fix {!!}
+
   fix-equiv-from : ∀ {n} {α : Aτ} {P P' : Proc n} →
     (s : P ⟨ α ⟩fix'⇒ P') →
     P ⟨ α ⟩fix⇒ P'
   fix-equiv-from (Step' s) = Step s
-  fix-equiv-from (Fix' s) with fix'-subst s
-  ... | p = Fix (fix-equiv-from {!!})
+  fix-equiv-from (Fix' s) with fix-equiv-from s
+  ... | p = Fix (fix-subst p)
