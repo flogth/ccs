@@ -14,19 +14,6 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
 
   -- Equivalence of the two semantics
 
-  subst-swap : ∀ {n} (P : Proc (suc (suc n))) {T : Proc n} →
-                (subst (exts (σ T)) P) [0↦ fix (subst (exts (σ T)) P)] ≡ subst (σ T) (P [0↦ fix P ])
-  subst-swap ∅ = refl
-  subst-swap (# x) = {!!}
-  subst-swap (α ∙ P) {T} = cong (α ∙_) {!!}
-  subst-swap (P ＋ Q) = begin
-    {!!} ≡⟨ {!!} ⟩
-    {!!} ∎
-  subst-swap (P ∣ Q) = {!!}
-  subst-swap (P ∖ a) = {!!}
-  subst-swap (P [ φ ]) = {!!}
-  subst-swap (fix P) = {!!}
-
   subst-step : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} → guarded P
     → (x : S ⟨ α ⟩⇒ Q) → (S ≡ P [0↦ T ]) → Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩⇒ Q') × (Q ≡ Q' [0↦ T ])
   subst-step (α ∙ P) .(_ ∙ _) g Prefix refl = P , Prefix , refl
