@@ -64,8 +64,10 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     P ⟨ α ⟩fix⇒ P' →
     P [0↦ T ] ⟨ α ⟩fix⇒ P' [0↦ T ]
   fix-subst (Step x) = Step (step-subst x)
-  fix-subst {T = T} (Fix x) with fix-subst {T = T} x
-  ... | p = Fix {!!}
+  fix-subst {_} {α} {fix P} {P'} {T} (Fix der) = Fix (≡-subst (_⟨ α ⟩fix⇒ (P' [0↦ T ])) eq (fix-subst {P = P [0↦ fix P ]} der))
+     where
+      eq : P [0↦ fix P ] [0↦ T ] ≡ P [1↦ T ] [0↦ fix (P [1↦ T ])]
+      eq = sym (subst-commute {P = P} {Q = fix P} {σ = subst-zero T})
 
   fix-equiv-from : ∀ {n} {α : Aτ} {P P' : Proc n} →
     (s : P ⟨ α ⟩fix'⇒ P') →
