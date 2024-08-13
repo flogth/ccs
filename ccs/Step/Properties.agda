@@ -1,6 +1,5 @@
 open import Relation.Binary.Definitions using (DecidableEquality)
 open import Relation.Binary.PropositionalEquality renaming (subst to ≡-subst) hiding ([_])
-open ≡-Reasoning
 open import Data.Fin
 open import Data.Product
 open import Action
@@ -14,26 +13,32 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
 
   -- Equivalence of the two semantics
 
-  subst-step : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} → guarded P
-    → (x : S ⟨ α ⟩⇒ Q) → (S ≡ P [0↦ T ]) → Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩⇒ Q') × (Q ≡ Q' [0↦ T ])
-  subst-step (α ∙ P) .(_ ∙ _) g Prefix refl = P , Prefix , refl
-  subst-step (P ＋ _) .(_ ＋ _) {T = T} (guarded-＋ gP _) (Sumₗ s) refl with subst-step P (P [0↦ T ]) gP s refl
+  subst-step : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} →
+    guarded P →
+    S ⟨ α ⟩⇒ Q →
+    S ≡ P [0↦ T ] →
+    Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩⇒ Q') × (Q ≡ Q' [0↦ T ])
+  subst-step (α ∙ P) _ g Prefix refl = P , Prefix , refl
+  subst-step (P ＋ _) _ {T = T} (guarded-＋ gP _) (Sumₗ s) refl with subst-step P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = P' , Sumₗ s , eq
-  subst-step (_ ＋ Q) .(_ ＋ _) {T = T} (guarded-＋ _ gQ) (Sumᵣ s) refl with subst-step Q (Q [0↦ T ]) gQ s refl
+  subst-step (_ ＋ Q) _ {T = T} (guarded-＋ _ gQ) (Sumᵣ s) refl with subst-step Q (Q [0↦ T ]) gQ s refl
   ... | Q' , s , eq = Q' , Sumᵣ s , eq
-  subst-step (P ∣ Q) .(_ ∣ _) {T = T} (guarded-∣ gP _) (Compₗ s) refl with subst-step P (P [0↦ T ]) gP s refl
+  subst-step (P ∣ Q) _ {T = T} (guarded-∣ gP _) (Compₗ s) refl with subst-step P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = (P' ∣ Q) , Compₗ s , cong (_∣ (Q [0↦ T ])) eq
-  subst-step (P ∣ Q) .(_ ∣ _) {T = T} (guarded-∣ _ gQ) (Compᵣ s) refl with subst-step Q (Q [0↦ T ]) gQ s refl
+  subst-step (P ∣ Q) _ {T = T} (guarded-∣ _ gQ) (Compᵣ s) refl with subst-step Q (Q [0↦ T ]) gQ s refl
   ... | Q' , s , eq = (P ∣ Q') , Compᵣ s , cong ((P [0↦ T ]) ∣_) eq
-  subst-step (P ∣ Q) .(_ ∣ _) {T = T} (guarded-∣ gP gQ) (Sync {P' = P''} {Q' = Q''} s t) refl with subst-step P (P [0↦ T ]) gP s refl | subst-step Q (Q [0↦ T ]) gQ t refl
+  subst-step (P ∣ Q) _ {T = T} (guarded-∣ gP gQ) (Sync {P' = P''} {Q' = Q''} s t) refl with subst-step P (P [0↦ T ]) gP s refl | subst-step Q (Q [0↦ T ]) gQ t refl
   ... | P' , sP , eqP | Q' , sQ , eqQ = P' ∣ Q' , Sync sP sQ , trans (cong (_∣ Q'') eqP) (cong ((P' [0↦ T ]) ∣_) eqQ)
-  subst-step (P ∖ a) .(_ ∖ _) {T = T} (guarded-∖ gP) (Res s p q) refl with subst-step P (P [0↦ T ]) gP s refl
+  subst-step (P ∖ a) _ {T = T} (guarded-∖ gP) (Res s p q) refl with subst-step P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = (P' ∖ a) , Res s p q , cong (_∖ a) eq
-  subst-step (P [ φ ]) .(_ [ _ ]) {T = T} (guarded-ren gP) (Ren s) refl with subst-step P (P [0↦ T ]) gP s refl
+  subst-step (P [ φ ]) _ {T = T} (guarded-ren gP) (Ren s) refl with subst-step P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = (P' [ φ ]) , Ren s , cong (_[ φ ]) eq
 
-  subst-step-fix : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} → guarded P
-    → (x : S ⟨ α ⟩fix⇒ Q) → (S ≡ P [0↦ T ]) → Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩fix⇒ Q') × (Q ≡ Q' [0↦ T ])
+  subst-step-fix : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} →
+    guarded P →
+    S ⟨ α ⟩fix⇒ Q →
+    S ≡ P [0↦ T ] →
+    Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩fix⇒ Q') × (Q ≡ Q' [0↦ T ])
   subst-step-fix P S g (Step x) eq with subst-step P S g x eq
   ... | Q' , s , eq = Q' , Step s , eq
   subst-step-fix {n} (fix P) .(fix (P [1↦ T ])) {Q}{T} (guarded-fix gP) (Fix der) refl
@@ -42,7 +47,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
 
   fix-equiv-to : ∀ {n} {α : Aτ} {P P' : Proc n} →
     (guarded P) →
-    (s : P ⟨ α ⟩fix⇒ P') →
+    P ⟨ α ⟩fix⇒ P' →
     P ⟨ α ⟩fix'⇒ P'
   fix-equiv-to gP (Step s) = Step' s
   fix-equiv-to {α = α} {P' = P'} (guarded-fix gP) (Fix {P = P} s) with subst-step-fix P (P [0↦ fix P ]) gP s refl
@@ -70,7 +75,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
       eq = sym (subst-commute {P = P} {Q = fix P} {σ = subst-zero T})
 
   fix-equiv-from : ∀ {n} {α : Aτ} {P P' : Proc n} →
-    (s : P ⟨ α ⟩fix'⇒ P') →
+    P ⟨ α ⟩fix'⇒ P' →
     P ⟨ α ⟩fix⇒ P'
   fix-equiv-from (Step' s) = Step s
   fix-equiv-from (Fix' s) with fix-equiv-from s
