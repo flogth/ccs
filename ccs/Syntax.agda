@@ -201,8 +201,3 @@ module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A de
       ⟪ σ ⟫ (⟪ Q ⊙ ids ⟫ P)
     ≡⟨ cong ⟪ σ ⟫ (sym (cong-sub {P = P} subst-Z-cons-ids refl)) ⟩
     ⟪ σ ⟫ (P [0↦ Q ]) ∎
-
-
-  subst-swap : ∀ {n} (P : Proc (suc (suc n))) {T : Proc n} →
-                (subst (exts (subst-zero T)) P) [0↦ fix (subst (exts (subst-zero T)) P)] ≡ subst (subst-zero T) (P [0↦ fix P ])
-  subst-swap P {T} = subst-commute {P = P} {Q = fix P} {σ = subst-zero T}

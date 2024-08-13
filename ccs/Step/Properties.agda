@@ -37,7 +37,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   subst-step-fix P S g (Step x) eq with subst-step P S g x eq
   ... | Q' , s , eq = Q' , Step s , eq
   subst-step-fix {n} (fix P) .(fix (P [1↦ T ])) {Q}{T} (guarded-fix gP) (Fix der) refl
-    with subst-step-fix (P [0↦ fix P ]) ((P [1↦ T ]) [0↦ fix (P [1↦ T ])]) (guarded-subst gP) der (subst-swap P {T = T})
+    with subst-step-fix (P [0↦ fix P ]) ((P [1↦ T ]) [0↦ fix (P [1↦ T ])]) (guarded-subst gP) der (subst-commute {P = P} {Q = fix P} {σ = subst-zero T})
   ... | P' , s , eq = P' , Fix s , eq
 
   fix-equiv-to : ∀ {n} {α : Aτ} {P P' : Proc n} →
