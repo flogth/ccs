@@ -6,42 +6,40 @@ open import Relation.Binary.Structures
 open import Data.Product
 import Syntax
 
-module Bisimilarity {ℓ} (A : Set ℓ) (_≈_ : Rel A ℓ) {Action : Act A _≈_} where
-
+module Bisimilarity {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
-  open Syntax A _≈_ {Action}
+  open import Syntax {ℓ} A {dec} {Action}
 
-  module _ (step : CCS → Aτ → CCS → Set ℓ) where
+  module _ (step : ∀ {n} → Proc n → Aτ → Proc n → Set ℓ) where
 
-    record _~_ (s t : CCS) : Set ℓ where
+  -- Strong Bisimilarity
+    record _~_ {n} (s t : Proc n) : Set ℓ where
       coinductive
       field
-        l : ∀ {α} {s'} →
+        forth : ∀ {α} {s'} →
          step s α s' →
-         Σ CCS λ t' → step t α t'
+         Σ (Proc n) λ t' → step t α t'
 
-        r : ∀ {α} {t'} →
+        back : ∀ {α} {t'} →
          step t α t' →
-         Σ CCS λ s' → step s α s'
+         Σ (Proc n) λ s' → step s α s'
     open _~_
 
-    reflexive : Reflexive _~_
+    reflexive : ∀ {n} → Reflexive (_~_ {n})
     reflexive = record {
-      l = λ {α} {s'} step → s' , step
-      ; r = λ {α} {t'} step → t' , step }
+        forth = λ {α} {s'} z → s' , z
+      ; back = λ {α} {t'} z → t' , z }
 
-    symmetric : Symmetric _~_
-    symmetric {x} {y} x~y = record {
-      l = λ step → r x~y step
-      ; r = λ  step → l x~y step }
+    symmetric : ∀ {n} → Symmetric (_~_ {n})
+    symmetric z = record { forth = back z ; back = forth z }
 
-    transitive : Transitive _~_
+    transitive : ∀ {n} → Transitive (_~_ {n})
     transitive i~j j~k = record {
-      l = λ step → l j~k (proj₂ (l i~j step))
-      ; r = λ step → r i~j (proj₂ (r j~k step)) }
+        forth = λ step → forth j~k (proj₂ (forth i~j step))
+      ; back = λ step → back i~j (proj₂ (back j~k step)) }
 
-    equivalence : IsEquivalence _~_
+    equivalence : ∀ {n} →  IsEquivalence (_~_ {n})
     equivalence = record {
-      refl = reflexive
+        refl = reflexive
       ; sym = symmetric
       ; trans = transitive }
