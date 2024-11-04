@@ -78,5 +78,4 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     P ⟨ α ⟩fix'⇒ P' →
     P ⟨ α ⟩fix⇒ P'
   fix-equiv-from (Step' s) = Step s
-  fix-equiv-from (Fix' s) with fix-equiv-from s
-  ... | p = Fix (fix-subst p)
+  fix-equiv-from (Fix' s) = Fix (fix-subst (fix-equiv-from s))
