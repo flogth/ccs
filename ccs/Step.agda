@@ -88,7 +88,8 @@ module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec}
   data _⟨_⟩_⇒_ : {n m : ℕ} → (P : Proc n) → (α : Aτ) → Subst n m → (Q : Proc m) → Set ℓ where
     Prefix : ∀ {n} {α : Aτ} {P : Proc n} {σ : Subst n n} →
       α ∙ P ⟨ α ⟩ σ ⇒ (⟪ σ ⟫ P)
-     Sumₗ : ∀ {n} {α : Aτ} {P P' Q : Proc n} {σ : Subst n n} →
+
+    Sumₗ : ∀ {n} {α : Aτ} {P P' Q : Proc n} {σ : Subst n n} →
          P ⟨ α ⟩ σ ⇒ P' →
       ----------------------------------------
         (P ＋ Q) ⟨ α ⟩ σ ⇒ P'
