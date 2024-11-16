@@ -102,12 +102,12 @@ module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec}
     Compₗ : ∀ {n} {α : Aτ} {P P' Q : Proc n} {σ : Subst n n} →
           P ⟨ α ⟩ σ ⇒ P' →
       ----------------------------------------
-        (P ∣ Q) ⟨ α ⟩ σ ⇒ (P' ∣ Q)
+        (P ∣ Q) ⟨ α ⟩ σ ⇒ (P' ∣ ⟪ σ ⟫ Q)
 
     Compᵣ : ∀ {n} {α : Aτ} {P Q Q' : Proc n} {σ : Subst n n} →
           Q ⟨ α ⟩ σ ⇒ Q' →
       ----------------------------------------
-        (P ∣ Q) ⟨ α ⟩ σ ⇒ (P ∣ Q')
+        (P ∣ Q) ⟨ α ⟩ σ ⇒ ((⟪ σ ⟫ P) ∣ Q')
 
     Sync : ∀ {n} {a : A} {P P' Q Q' : Proc n} {σ : Subst n n} →
          P ⟨ act a ⟩ σ ⇒ P' →

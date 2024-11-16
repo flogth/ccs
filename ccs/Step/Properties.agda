@@ -88,8 +88,8 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   eqv-from-nofix refl Prefix = Prefix
   eqv-from-nofix refl (Sumₗ x) = Sumₗ (eqv-from-nofix refl x)
   eqv-from-nofix refl (Sumᵣ x) = Sumᵣ (eqv-from-nofix refl x)
-  eqv-from-nofix refl (Compₗ x) = {!!}
-  eqv-from-nofix refl (Compᵣ x) = {!!}
+  eqv-from-nofix refl (Compₗ x) = Compₗ (eqv-from-nofix refl x)
+  eqv-from-nofix refl (Compᵣ x) = Compᵣ (eqv-from-nofix refl x)
   eqv-from-nofix refl (Sync x y) = Sync (eqv-from-nofix refl x) (eqv-from-nofix refl y)
   eqv-from-nofix refl (Res x p q) = Res (eqv-from-nofix refl x) p q
   eqv-from-nofix refl (Ren x) = Ren (eqv-from-nofix refl x)
