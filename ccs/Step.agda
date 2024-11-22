@@ -86,48 +86,48 @@ module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec}
   infix 10 _⟨_⟩_⇒_
 
   data _⟨_⟩_⇒_ : {n m : ℕ} → (P : Proc n) → (α : Aτ) → Subst n m → (Q : Proc m) → Set ℓ where
-    Prefix : ∀ {n} {α : Aτ} {P : Proc n} {σ : Subst n n} →
+    Prefix : ∀ {n m} {α : Aτ} {P : Proc n} {σ : Subst n m} →
       α ∙ P ⟨ α ⟩ σ ⇒ (⟪ σ ⟫ P)
 
-    Sumₗ : ∀ {n} {α : Aτ} {P P' Q : Proc n} {σ : Subst n n} →
+    Sumₗ : ∀ {n m} {α : Aτ} {P Q : Proc n} {P' : Proc m} {σ : Subst n m} →
          P ⟨ α ⟩ σ ⇒ P' →
       ----------------------------------------
         (P ＋ Q) ⟨ α ⟩ σ ⇒ P'
 
-    Sumᵣ : ∀ {n} {α : Aτ} {P Q Q' : Proc n} {σ : Subst n n} →
+    Sumᵣ : ∀ {n m} {α : Aτ} {P Q : Proc n} {Q' : Proc m} {σ : Subst n m} →
          Q ⟨ α ⟩ σ ⇒ Q' →
       ----------------------------------------
         (P ＋ Q) ⟨ α ⟩ σ ⇒ Q'
 
-    Compₗ : ∀ {n} {α : Aτ} {P P' Q : Proc n} {σ : Subst n n} →
+    Compₗ : ∀ {n m} {α : Aτ} {P Q : Proc n} {P' : Proc m} {σ : Subst n m} →
           P ⟨ α ⟩ σ ⇒ P' →
       ----------------------------------------
         (P ∣ Q) ⟨ α ⟩ σ ⇒ (P' ∣ ⟪ σ ⟫ Q)
 
-    Compᵣ : ∀ {n} {α : Aτ} {P Q Q' : Proc n} {σ : Subst n n} →
+    Compᵣ : ∀ {n m} {α : Aτ} {P Q : Proc n} {Q' : Proc m} {σ : Subst n m} →
           Q ⟨ α ⟩ σ ⇒ Q' →
       ----------------------------------------
         (P ∣ Q) ⟨ α ⟩ σ ⇒ ((⟪ σ ⟫ P) ∣ Q')
 
-    Sync : ∀ {n} {a : A} {P P' Q Q' : Proc n} {σ : Subst n n} →
+    Sync : ∀ {n m} {a : A} {P Q : Proc n} {P' Q' : Proc m} {σ : Subst n m} →
          P ⟨ act a ⟩ σ ⇒ P' →
          Q ⟨ act (comp a) ⟩ σ ⇒ Q' →
       ----------------------------------------
         (P ∣ Q) ⟨ τ ⟩ σ ⇒ (P' ∣ Q')
 
-    Res : ∀ {n} {α} {a : A} {P P' : Proc n} {σ : Subst n n} →
+    Res : ∀ {n m} {α} {a : A} {P : Proc n} {P' : Proc m} {σ : Subst n m} →
         P ⟨ α ⟩ σ ⇒ P' →
         α ≢ act a →
         α ≢ act (comp a) →
       ----------------------------------------
         (P ∖ a) ⟨ act a ⟩ σ ⇒ (P' ∖ a)
 
-    Ren : ∀ {n} {α} {φ : Renaming} {P P' : Proc n} {σ : Subst n n} →
+    Ren : ∀ {n m} {α} {φ : Renaming} {P : Proc n} {P' : Proc m} {σ : Subst n m} →
         P ⟨ α ⟩ σ ⇒ P' →
       ----------------------------------------
         (P [ φ ]) ⟨ ⟨ φ ⟩Aτ α ⟩ σ ⇒ (P' [ φ ])
 
-    Fix : ∀ {n} {α} {P : Proc (suc n)} {P' : Proc n} {σ : Subst n n} →
+    Fix : ∀ {n m} {α} {P : Proc (suc n)} {P' : Proc m} {σ : Subst n m} →
         P ⟨ α ⟩ subst-zero (fix P) ⨾ σ ⇒ P' →
       ----------------------------------------
         fix P ⟨ α ⟩ σ ⇒ P'
