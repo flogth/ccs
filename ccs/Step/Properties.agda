@@ -102,11 +102,12 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     P ⟨ α ⟩ σ ⇒ P'' →
     ∃ λ P' → P'' ≡ ⟪ σ ⟫ P' × P ⟨ α ⟩fix'⇒ P'
   eqv-to {P = α ∙ P} Prefix = P , refl , Prefix
-  eqv-to {σ = σ} (Sumₗ x) = let (P' , eq , s) = eqv-to x in P' , eq , (Sumₗ {!!})
-  eqv-to (Sumᵣ x) = {!!}
-  eqv-to (Compₗ x) = {!!}
-  eqv-to (Compᵣ x) = {!!}
-  eqv-to (Sync x x₁) = {!!}
-  eqv-to (Res x x₁ x₂) = {!!}
-  eqv-to (Ren x) = {!!}
-  eqv-to (Fix x) = {!!}
+  eqv-to {σ = σ} (Sumₗ x) = let (P' , eq , s) = eqv-to x in P' , eq , (Sumₗ s)
+  eqv-to (Sumᵣ x) = let (Q' , eq , s) = eqv-to x in Q' , eq , (Sumᵣ s)
+  eqv-to {σ = σ} (Compₗ {Q = Q} x) = let (P' , eq , s) = eqv-to x in P' ∣ Q , cong (_∣ ⟪ σ ⟫ Q) eq , Compₗ s
+  eqv-to {σ = σ} (Compᵣ {P = P} x) = let (Q' , eq , s) = eqv-to x in P ∣ Q' , cong ((⟪ σ ⟫ P) ∣_) eq , Compᵣ s
+  eqv-to (Sync x y) = let (P' , eqP , sP) = eqv-to x in
+                      let (Q' , eqQ , sQ) = eqv-to y in P' ∣ Q' , cong₂ _∣_ eqP eqQ , Sync sP sQ
+  eqv-to (Res {a = a} x p q) = let (P' , eq , s) = eqv-to x in (P' ∖ a) , cong (_∖ a) eq , Res s p q
+  eqv-to (Ren {φ = φ} x) = let (P' , eq , s) = eqv-to x in (P' [ φ ]) , cong (_[ φ ]) eq , Ren s
+  eqv-to {σ = σ} (Fix {P = P} x) = let (P' , eq , s) = eqv-to x in (P' [0↦ fix P ]) , trans eq (sym (sub-sub {P = P'} {σ = subst-zero (fix P)} {σ' = σ}))  , Fix' s
