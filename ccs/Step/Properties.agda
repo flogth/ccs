@@ -15,9 +15,9 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
 
   subst-step : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} →
     guarded P →
-    S ⟨ α ⟩⇒ Q →
+    S ⟨ α ⟩fix⇒ Q →
     S ≡ P [0↦ T ] →
-    Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩⇒ Q') × (Q ≡ Q' [0↦ T ])
+    Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩fix⇒ Q') × (Q ≡ Q' [0↦ T ])
   subst-step (α ∙ P) _ g Prefix refl = P , Prefix , refl
   subst-step (P ＋ _) _ {T = T} (guarded-＋ gP _) (Sumₗ s) refl with subst-step P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = P' , Sumₗ s , eq
@@ -33,29 +33,28 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   ... | P' , s , eq = (P' ∖ a) , Res s p q , cong (_∖ a) eq
   subst-step (P [ φ ]) _ {T = T} (guarded-ren gP) (Ren s) refl with subst-step P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = (P' [ φ ]) , Ren s , cong (_[ φ ]) eq
-
-  subst-step-fix : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} →
-    guarded P →
-    S ⟨ α ⟩fix⇒ Q →
-    S ≡ P [0↦ T ] →
-    Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩fix⇒ Q') × (Q ≡ Q' [0↦ T ])
-  subst-step-fix P S g (Step x) eq with subst-step P S g x eq
-  ... | Q' , s , eq = Q' , Step s , eq
-  subst-step-fix {n} (fix P) .(fix (P [1↦ T ])) {Q}{T} (guarded-fix gP) (Fix der) refl
-    with subst-step-fix (P [0↦ fix P ]) ((P [1↦ T ]) [0↦ fix (P [1↦ T ])]) (guarded-subst gP) der (subst-commute {P = P} {Q = fix P} {σ = subst-zero T})
-  ... | P' , s , eq = P' , Fix s , eq
+  subst-step (fix P) _ {Q} {T} (guarded-fix gP) (Fix s) refl =
+    let (P' , s , eq) = subst-step (P [0↦ fix P ]) ((P [1↦ T ]) [0↦ fix (P [1↦ T ])]) (guarded-subst gP) s (subst-commute {P = P} {Q = fix P} {σ = subst-zero T})
+    in P' , Fix s , eq
 
   fix-equiv-to : ∀ {n} {α : Aτ} {P P' : Proc n} →
     (guarded P) →
     P ⟨ α ⟩fix⇒ P' →
     P ⟨ α ⟩fix'⇒ P'
-  fix-equiv-to gP (Step s) = Step' s
-  fix-equiv-to {α = α} {P' = P'} (guarded-fix gP) (Fix {P = P} s) with subst-step-fix P (P [0↦ fix P ]) gP s refl
-  ... | Q' , step , eq = ≡-subst (λ h → fix P ⟨ α ⟩fix'⇒ h) (sym eq) (Fix' (fix-equiv-to gP step))
+  fix-equiv-to (guarded-＋ gP _) (Sumₗ s) = Sumₗ (fix-equiv-to gP s)
+  fix-equiv-to (guarded-＋ _ gQ) (Sumᵣ s) = Sumᵣ (fix-equiv-to gQ s)
+  fix-equiv-to (guarded-∣ gP _) (Compₗ s) = Compₗ (fix-equiv-to gP s)
+  fix-equiv-to (guarded-∣ _ gQ) (Compᵣ s) = Compᵣ (fix-equiv-to gQ s)
+  fix-equiv-to (guarded-∣ gP gQ) (Sync s p) = Sync (fix-equiv-to gP s) (fix-equiv-to gQ p)
+  fix-equiv-to (guarded-∖ gP) (Res s p q) = Res (fix-equiv-to gP s) p q
+  fix-equiv-to (guarded-ren gP) (Ren s) = Ren (fix-equiv-to gP s)
+  fix-equiv-to guarded-∙ Prefix = Prefix
+  fix-equiv-to {α = α} (guarded-fix gP) (Fix {P = P} s) = let (_ , step , eq) = subst-step P (P [0↦ fix P ]) gP s refl in
+    ≡-subst (λ h → fix P ⟨ α ⟩fix'⇒ h) (sym eq) (Fix' (fix-equiv-to gP step))
 
   step-subst : ∀ {n} {α : Aτ} {P P' : Proc (suc n)} {σ : Subst (suc n) n} →
-    P ⟨ α ⟩⇒ P' →
-    ⟪ σ ⟫ P ⟨ α ⟩⇒ ⟪ σ ⟫ P'
+    P ⟨ α ⟩fix⇒ P' →
+    ⟪ σ ⟫ P ⟨ α ⟩fix⇒ ⟪ σ ⟫ P'
   step-subst Prefix = Prefix
   step-subst (Sumₗ x) = Sumₗ (step-subst x)
   step-subst (Sumᵣ x) = Sumᵣ (step-subst x)
@@ -64,42 +63,50 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   step-subst (Sync x y) = Sync (step-subst x) (step-subst y)
   step-subst (Res x p q) = Res (step-subst x) p q
   step-subst (Ren x) = Ren (step-subst x)
-
-  fix-subst : ∀ {n} {α : Aτ} {P P' : Proc (suc n)} {σ : Subst (suc n) n} →
-    P ⟨ α ⟩fix⇒ P' →
-    ⟪ σ ⟫ P  ⟨ α ⟩fix⇒ ⟪ σ ⟫ P'
-  fix-subst (Step x) = Step (step-subst x)
-  fix-subst {α = α} {P = fix P} {P' = P'} {σ = σ} (Fix der) = Fix (≡-subst (_⟨ α ⟩fix⇒ ⟪ σ ⟫ P') helper (fix-subst der))
-    where
-      helper : ⟪ σ ⟫ (P [0↦ fix P ]) ≡ (⟪ exts σ ⟫ P) [0↦ fix (⟪ exts σ ⟫ P) ]
-      helper = sym (subst-commute  {P = P} {Q = fix P} {σ = σ})
+  step-subst {α = α} {P = fix P} {P' = P'} {σ = σ} (Fix der) = Fix (≡-subst (_⟨ α ⟩fix⇒ ⟪ σ ⟫ P') helper (step-subst der))
+     where
+       helper : ⟪ σ ⟫ (P [0↦ fix P ]) ≡ (⟪ exts σ ⟫ P) [0↦ fix (⟪ exts σ ⟫ P) ]
+       helper = sym (subst-commute  {P = P} {Q = fix P} {σ = σ})
 
   fix-equiv-from : ∀ {n} {α : Aτ} {P P' : Proc n} →
     P ⟨ α ⟩fix'⇒ P' →
     P ⟨ α ⟩fix⇒ P'
-  fix-equiv-from (Step' s) = Step s
-  fix-equiv-from (Fix' s) = Fix (fix-subst (fix-equiv-from s))
+  fix-equiv-from Prefix = Prefix
+  fix-equiv-from (Sumₗ s) = Sumₗ (fix-equiv-from s)
+  fix-equiv-from (Sumᵣ s) = Sumᵣ (fix-equiv-from s)
+  fix-equiv-from (Compₗ s) = Compₗ (fix-equiv-from s)
+  fix-equiv-from (Compᵣ s) = Compᵣ (fix-equiv-from s)
+  fix-equiv-from (Sync s p) = Sync (fix-equiv-from s) (fix-equiv-from p)
+  fix-equiv-from (Res s p q) = Res (fix-equiv-from s) p q
+  fix-equiv-from (Ren s) = Ren (fix-equiv-from s)
+  fix-equiv-from (Fix' s) = Fix (step-subst (fix-equiv-from s))
 
   -- Equivalence of alternative fixpoint semantics and transitions with substitutions
-  eqv-from-nofix : ∀ {n m} {α : Aτ} {P P' : Proc n} {P'' : Proc m} {σ : Subst n m} →
-      P'' ≡ ⟪ σ ⟫ P' →
-      P ⟨ α ⟩⇒  P' →
-      P ⟨ α ⟩ σ ⇒ P''
-  eqv-from-nofix refl Prefix = Prefix
-  eqv-from-nofix refl (Sumₗ x) = Sumₗ (eqv-from-nofix refl x)
-  eqv-from-nofix refl (Sumᵣ x) = Sumᵣ (eqv-from-nofix refl x)
-  eqv-from-nofix refl (Compₗ x) = Compₗ (eqv-from-nofix refl x)
-  eqv-from-nofix refl (Compᵣ x) = Compᵣ (eqv-from-nofix refl x)
-  eqv-from-nofix refl (Sync x y) = Sync (eqv-from-nofix refl x) (eqv-from-nofix refl y)
-  eqv-from-nofix refl (Res x p q) = Res (eqv-from-nofix refl x) p q
-  eqv-from-nofix refl (Ren x) = Ren (eqv-from-nofix refl x)
-
-
   eqv-from : ∀ {n m} {α : Aτ} {P P' : Proc n} {P'' : Proc m} {σ : Subst n m} →
-    P'' ≡ ⟪ σ ⟫ P' →
-    P ⟨ α ⟩fix'⇒ P' →
-    P ⟨ α ⟩ σ ⇒ P''
-  eqv-from {α = α} {P = P} {σ = σ} eq (Step' x) = eqv-from-nofix eq x
+      P'' ≡ ⟪ σ ⟫ P' →
+      P ⟨ α ⟩fix'⇒  P' →
+      P ⟨ α ⟩ σ ⇒ P''
+  eqv-from refl Prefix = Prefix
+  eqv-from refl (Sumₗ x) = Sumₗ (eqv-from refl x)
+  eqv-from refl (Sumᵣ x) = Sumᵣ (eqv-from refl x)
+  eqv-from refl (Compₗ x) = Compₗ (eqv-from refl x)
+  eqv-from refl (Compᵣ x) = Compᵣ (eqv-from refl x)
+  eqv-from refl (Sync x y) = Sync (eqv-from refl x) (eqv-from refl y)
+  eqv-from refl (Res x p q) = Res (eqv-from refl x) p q
+  eqv-from refl (Ren x) = Ren (eqv-from refl x)
   eqv-from {α = α} {P = fix P} {σ = σ} refl (Fix' {P' = P'} x) rewrite (sub-sub {P = P'} {σ = subst-zero (fix P)} {σ' = σ}) = (Fix rec)
-    where rec : P ⟨ α ⟩ (subst-zero (fix P) ⨾ σ) ⇒ ⟪ subst-zero (fix P) ⨾ σ ⟫ P'
-          rec = eqv-from refl x
+     where rec : P ⟨ α ⟩ (subst-zero (fix P) ⨾ σ) ⇒ ⟪ subst-zero (fix P) ⨾ σ ⟫ P'
+           rec = eqv-from refl x
+
+  eqv-to : ∀ {n m} {α : Aτ} {P : Proc n} {P'' : Proc m} {σ : Subst n m} →
+    P ⟨ α ⟩ σ ⇒ P'' →
+    ∃ λ P' → P'' ≡ ⟪ σ ⟫ P' × P ⟨ α ⟩fix'⇒ P'
+  eqv-to {P = α ∙ P} Prefix = P , refl , Prefix
+  eqv-to {σ = σ} (Sumₗ x) = let (P' , eq , s) = eqv-to x in P' , eq , (Sumₗ {!!})
+  eqv-to (Sumᵣ x) = {!!}
+  eqv-to (Compₗ x) = {!!}
+  eqv-to (Compᵣ x) = {!!}
+  eqv-to (Sync x x₁) = {!!}
+  eqv-to (Res x x₁ x₂) = {!!}
+  eqv-to (Ren x) = {!!}
+  eqv-to (Fix x) = {!!}
