@@ -81,7 +81,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   fix-equiv-from (Fix' s) = Fix (fix-subst (fix-equiv-from s))
 
   -- Equivalence of alternative fixpoint semantics and transitions with substitutions
-  eqv-from-nofix : ∀ {n} {α : Aτ} {P P' P'' : Proc n} {σ : Subst n n} →
+  eqv-from-nofix : ∀ {n m} {α : Aτ} {P P' : Proc n} {P'' : Proc m} {σ : Subst n m} →
       P'' ≡ ⟪ σ ⟫ P' →
       P ⟨ α ⟩⇒  P' →
       P ⟨ α ⟩ σ ⇒ P''
@@ -95,9 +95,11 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   eqv-from-nofix refl (Ren x) = Ren (eqv-from-nofix refl x)
 
 
-  eqv-from : ∀ {n} {α : Aτ} {P P' P'' : Proc n} {σ : Subst n n} →
+  eqv-from : ∀ {n m} {α : Aτ} {P P' : Proc n} {P'' : Proc m} {σ : Subst n m} →
     P'' ≡ ⟪ σ ⟫ P' →
     P ⟨ α ⟩fix'⇒ P' →
     P ⟨ α ⟩ σ ⇒ P''
   eqv-from {α = α} {P = P} {σ = σ} eq (Step' x) = eqv-from-nofix eq x
-  eqv-from {α = α} {P = fix P} {σ = σ} eq (Fix' x) = Fix {!!}
+  eqv-from {α = α} {P = fix P} {σ = σ} refl (Fix' {P' = P'} x) rewrite (sub-sub {P = P'} {σ = subst-zero (fix P)} {σ' = σ}) = (Fix rec)
+    where rec : P ⟨ α ⟩ (subst-zero (fix P) ⨾ σ) ⇒ ⟪ subst-zero (fix P) ⨾ σ ⟫ P'
+          rec = eqv-from refl x
