@@ -12,8 +12,9 @@ module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A de
   open import Data.Fin using (Fin ; raise)
 
   infix 20 _∣_
-  infix 20 _＋_
+  infix 21 _＋_
   infix 25 _∙_
+  infix 25 #_
 
   data Proc : ℕ → Set ℓ where
     ∅ : ∀ {n} → Proc n
