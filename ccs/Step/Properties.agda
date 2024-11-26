@@ -52,6 +52,20 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   fix-equiv-to {α = α} (guarded-fix gP) (Fix {P = P} s) = let (_ , step , eq) = subst-step P (P [0↦ fix P ]) gP s refl in
     ≡-subst (λ h → fix P ⟨ α ⟩fix'⇒ h) (sym eq) (Fix' (fix-equiv-to gP step))
 
+  -- this direction does indeed hold only for guarded terms:
+  module counter-example (a : A) where
+    open import Relation.Nullary using (¬_)
+
+    cex : Proc zero
+    cex = fix ((Proc.# zero) ∣ ((act a ∙ ∅) ＋ (act (comp a) ∙ ∅)))
+
+    step : ∃ λ P' → cex ⟨ τ ⟩fix⇒ P'
+    step = (cex ∣ ∅) ∣ ∅ , Fix (Sync (Fix (Compᵣ (Sumₗ Prefix))) (Sumᵣ Prefix))
+
+    no-step' : ∀ {P'} →  ¬ (cex ⟨ τ ⟩fix'⇒ P')
+    no-step' (Fix' (Compᵣ (Sumₗ ())))
+    no-step' (Fix' (Compᵣ (Sumᵣ ())))
+
   step-subst : ∀ {n} {α : Aτ} {P P' : Proc (suc n)} {σ : Subst (suc n) n} →
     P ⟨ α ⟩fix⇒ P' →
     ⟪ σ ⟫ P ⟨ α ⟩fix⇒ ⟪ σ ⟫ P'
