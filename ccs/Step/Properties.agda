@@ -12,6 +12,8 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   open import Step {ℓ} A {dec} {Action}
 
   -- Equivalence of the two semantics
+  _⇔_ : ∀ {ℓ} (A B : Set ℓ) → Set ℓ
+  A ⇔ B = (A → B) × (B → A)
 
   subst-step : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} →
     guarded P →
@@ -98,6 +100,9 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   fix'⇒fix (Res s p q) = Res (fix'⇒fix s) p q
   fix'⇒fix (Ren s) = Ren (fix'⇒fix s)
   fix'⇒fix (Fix' s) = Fix (step-subst (fix'⇒fix s))
+
+  fix⇔fix' : ∀ {n} {α : Aτ} {P P' : Proc n} → (guarded P) → (P ⟨ α ⟩fix⇒ P') ⇔ (P ⟨ α ⟩fix'⇒ P')
+  fix⇔fix' gP = (fix⇒fix' gP) , fix'⇒fix
 
   -- Equivalence of alternative fixpoint semantics and transitions with substitutions
   fix'⇒step-subst : ∀ {n m} {α : Aτ} {P P' : Proc n} {P'' : Proc m} {σ : Subst n m} →
