@@ -15,28 +15,28 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   _⇔_ : ∀ {ℓ} (A B : Set ℓ) → Set ℓ
   A ⇔ B = (A → B) × (B → A)
 
-  subst-step : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} →
+  subst-fix-swap : ∀ {n} {α : Aτ} (P : Proc (suc n)) → (S : Proc  n) {Q T : Proc  n} →
     guarded P →
     S ⟨ α ⟩fix⇒ Q →
     S ≡ P [0↦ T ] →
     Σ (Proc (suc n)) λ Q' → (P ⟨ α ⟩fix⇒ Q') × (Q ≡ Q' [0↦ T ])
-  subst-step (α ∙ P) _ g Prefix refl = P , Prefix , refl
-  subst-step (P ＋ _) _ {T = T} (guarded-＋ gP _) (Sumₗ s) refl with subst-step P (P [0↦ T ]) gP s refl
+  subst-fix-swap (α ∙ P) _ g Prefix refl = P , Prefix , refl
+  subst-fix-swap (P ＋ _) _ {T = T} (guarded-＋ gP _) (Sumₗ s) refl with subst-fix-swap P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = P' , Sumₗ s , eq
-  subst-step (_ ＋ Q) _ {T = T} (guarded-＋ _ gQ) (Sumᵣ s) refl with subst-step Q (Q [0↦ T ]) gQ s refl
+  subst-fix-swap (_ ＋ Q) _ {T = T} (guarded-＋ _ gQ) (Sumᵣ s) refl with subst-fix-swap Q (Q [0↦ T ]) gQ s refl
   ... | Q' , s , eq = Q' , Sumᵣ s , eq
-  subst-step (P ∣ Q) _ {T = T} (guarded-∣ gP _) (Compₗ s) refl with subst-step P (P [0↦ T ]) gP s refl
+  subst-fix-swap (P ∣ Q) _ {T = T} (guarded-∣ gP _) (Compₗ s) refl with subst-fix-swap P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = (P' ∣ Q) , Compₗ s , cong (_∣ (Q [0↦ T ])) eq
-  subst-step (P ∣ Q) _ {T = T} (guarded-∣ _ gQ) (Compᵣ s) refl with subst-step Q (Q [0↦ T ]) gQ s refl
+  subst-fix-swap (P ∣ Q) _ {T = T} (guarded-∣ _ gQ) (Compᵣ s) refl with subst-fix-swap Q (Q [0↦ T ]) gQ s refl
   ... | Q' , s , eq = (P ∣ Q') , Compᵣ s , cong ((P [0↦ T ]) ∣_) eq
-  subst-step (P ∣ Q) _ {T = T} (guarded-∣ gP gQ) (Sync {P' = P''} {Q' = Q''} s t) refl with subst-step P (P [0↦ T ]) gP s refl | subst-step Q (Q [0↦ T ]) gQ t refl
+  subst-fix-swap (P ∣ Q) _ {T = T} (guarded-∣ gP gQ) (Sync {P' = P''} {Q' = Q''} s t) refl with subst-fix-swap P (P [0↦ T ]) gP s refl | subst-fix-swap Q (Q [0↦ T ]) gQ t refl
   ... | P' , sP , eqP | Q' , sQ , eqQ = P' ∣ Q' , Sync sP sQ , trans (cong (_∣ Q'') eqP) (cong ((P' [0↦ T ]) ∣_) eqQ)
-  subst-step (P ∖ a) _ {T = T} (guarded-∖ gP) (Res s p q) refl with subst-step P (P [0↦ T ]) gP s refl
+  subst-fix-swap (P ∖ a) _ {T = T} (guarded-∖ gP) (Res s p q) refl with subst-fix-swap P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = (P' ∖ a) , Res s p q , cong (_∖ a) eq
-  subst-step (P [ φ ]) _ {T = T} (guarded-ren gP) (Ren s) refl with subst-step P (P [0↦ T ]) gP s refl
+  subst-fix-swap (P [ φ ]) _ {T = T} (guarded-ren gP) (Ren s) refl with subst-fix-swap P (P [0↦ T ]) gP s refl
   ... | P' , s , eq = (P' [ φ ]) , Ren s , cong (_[ φ ]) eq
-  subst-step (fix P) _ {Q} {T} (guarded-fix gP) (Fix s) refl =
-    let (P' , s , eq) = subst-step (P [0↦ fix P ]) ((P [1↦ T ]) [0↦ fix (P [1↦ T ])]) (guarded-subst gP) s (subst-commute {P = P} {Q = fix P} {σ = subst-zero T})
+  subst-fix-swap (fix P) _ {Q} {T} (guarded-fix gP) (Fix s) refl =
+    let (P' , s , eq) = subst-fix-swap (P [0↦ fix P ]) ((P [1↦ T ]) [0↦ fix (P [1↦ T ])]) (guarded-subst gP) s (subst-commute {P = P} {Q = fix P} {σ = subst-zero T})
     in P' , Fix s , eq
 
   fix⇒fix' : ∀ {n} {α : Aτ} {P P' : Proc n} →
@@ -51,7 +51,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   fix⇒fix' (guarded-∖ gP) (Res s p q) = Res (fix⇒fix' gP s) p q
   fix⇒fix' (guarded-ren gP) (Ren s) = Ren (fix⇒fix' gP s)
   fix⇒fix' guarded-∙ Prefix = Prefix
-  fix⇒fix' {α = α} (guarded-fix gP) (Fix {P = P} s) = let (_ , step , eq) = subst-step P (P [0↦ fix P ]) gP s refl in
+  fix⇒fix' {α = α} (guarded-fix gP) (Fix {P = P} s) = let (_ , step , eq) = subst-fix-swap P (P [0↦ fix P ]) gP s refl in
     ≡-subst (λ h → fix P ⟨ α ⟩fix'⇒ h) (sym eq) (Fix' (fix⇒fix' gP step))
 
   -- this direction does indeed hold only for guarded terms:
