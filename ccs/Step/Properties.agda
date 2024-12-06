@@ -134,3 +134,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   step-subst⇒fix' (Res {a = a} x p q) = let (P' , eq , s) = step-subst⇒fix' x in (P' ∖ a) , cong (_∖ a) eq , Res s p q
   step-subst⇒fix' (Ren {φ = φ} x) = let (P' , eq , s) = step-subst⇒fix' x in (P' [ φ ]) , cong (_[ φ ]) eq , Ren s
   step-subst⇒fix' {σ = σ} (Fix {P = P} x) = let (P' , eq , s) = step-subst⇒fix' x in (P' [0↦ fix P ]) , trans eq (sym (sub-sub {P = P'} {σ = subst-zero (fix P)} {σ' = σ}))  , Fix' s
+
+  subst-step⇔fix' :  ∀ {n m} {α : Aτ} {P : Proc n} {P'' : Proc m} {σ : Subst n m} →
+    (P ⟨ α ⟩ σ ⇒ P'') ⇔ (∃ λ P' → P'' ≡ ⟪ σ ⟫ P' × P ⟨ α ⟩fix'⇒ P')
+  subst-step⇔fix' = step-subst⇒fix' , (λ x → fix'⇒step-subst (proj₁ (proj₂ x)) (proj₂ (proj₂ x)))
