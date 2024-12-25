@@ -42,8 +42,7 @@ module Step.SubstitutionLabels {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {
 
     Res : ∀ {n m} {α} {a : A} {P : Proc n} {P' : Proc m} {σ : Subst n m} →
         P ⟨ α , σ ⟩⇒ P' →
-        α ≢ act a →
-        α ≢ act (comp a) →
+        α ≉ act a →
       ----------------------------------------
         (P ∖ a) ⟨ act a , σ ⟩⇒ (P' ∖ a)
 

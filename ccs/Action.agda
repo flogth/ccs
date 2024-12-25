@@ -24,15 +24,25 @@ module Action {ℓ} (A : Set ℓ) (dec : DecidableEquality A) where
     act : A → Aτ
     act = inj₁
 
-    _≈_ : A → A → Set ℓ
-    a ≈ a' = a ≡ a' ⊎ a ≡ (comp a')
+    data _≈_ : Aτ → Aτ → Set ℓ where
+      τ-eq : inj₂ tau ≈ inj₂ tau
+
+      a-eq : ∀ {a b : A} → a ≡ b → inj₁ a ≈ inj₁ b
+
+      a-eq-comp : ∀ {a b : A} → a ≡ comp b → inj₁ a ≈ inj₁ b
 
     ≈-dec : Decidable _≈_
-    ≈-dec x y with dec x y
-    ... | no ¬a with dec x (comp y)
-    ≈-dec x y | no ¬a | no ¬b = no (λ {(inj₁ p) → ¬a p ; (inj₂ q) → ¬b q})
-    ≈-dec x y | no ¬a | yes b = yes (inj₂ b)
-    ≈-dec x y | yes a = yes (inj₁ a)
+    ≈-dec (inj₁ x) (inj₁ y) with dec x y | dec x (comp y)
+    ... | yes p | yes q = yes (a-eq p)
+    ... | yes p | no q = yes (a-eq p)
+    ... | no p  | yes q = yes (a-eq-comp q)
+    ... | no p  | no q = no λ {(a-eq a) → p a ; (a-eq-comp b) → q b}
+    ≈-dec (inj₁ x) (inj₂ y) = no λ ()
+    ≈-dec (inj₂ y) (inj₁ x) = no λ ()
+    ≈-dec (inj₂ tau) (inj₂ tau) = yes τ-eq
+
+    _≉_ : Aτ → Aτ → Set ℓ
+    a ≉ b = a ≈ b → ⊥
 
   module Renaming (Action : Act) where
     open Act Action

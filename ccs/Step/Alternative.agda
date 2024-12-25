@@ -41,8 +41,7 @@ module Step.Alternative {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action 
 
     Res : ∀ {n} {α} {a : A} {P P' : Proc n} →
       P ⟨ α ⟩fix⇒ P' →
-      α ≢ act a →
-      α ≢ act (comp a) →
+      α ≉ act a →
       ----------------------------------------
       (P ∖ a) ⟨ act a ⟩fix⇒ (P' ∖ a)
 
