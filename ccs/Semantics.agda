@@ -1,79 +1,54 @@
-{-# OPTIONS --sized-types  #-}
-open import SynchronizationTree
+{-# OPTIONS --guardedness #-}
 open import Action
 
-open import Size
-open import Data.Fin
-open import Data.Sum using (inj₁ ; inj₂)
 open import Relation.Binary.Definitions using (DecidableEquality)
 open import Relation.Nullary.Decidable
-open import Codata.Sized.Colist renaming (map to cmap)
-open import Codata.Sized.Thunk
-open import Relation.Unary.Sized
+open import Data.List
+open import Data.Maybe
+open import Data.Product
+open import Data.Sum
+open import Data.Vec hiding (_++_)
 
 module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
   import Syntax
   open Syntax A {dec} {Action}
   open Action.Renaming A dec Action
-  open Tree
+  open import FreeAlgebra A {dec} {Action}
 
-  ST : (n : ℕ) → SizedSet ℓ
-  ST n = Tree (Fin n) Aτ
+  record FST (L : Set ℓ) : Set ℓ where
+    coinductive
+    constructor node
+    field
+      children : List L
 
-  Par : {n : ℕ} → ∀[ ST n ⇒ ST n ⇒ ST n ]
-  children (Par {n} l r) = go (children l) (children r)
+  open FST
+
+  Sub : ∀ (X Y : Set ℓ) → Set ℓ
+  Sub X Y = List (Maybe X) → Y
+
+  B : ∀ (X Y : Set ℓ) → Set ℓ
+  B X Y = Sub X Y × FST (Aτ × Sub X Y)
+
+  ϱ : ∀ {X Y : Set ℓ} → Sig (X × B X Y) → B X (Σ* (X ⊎ Y))
+  ϱ (dead , []) = (λ _ → app dead [])
+                , (node [])
+  ϱ (name m , []) = {!!}
+                  , (node [])
+  ϱ (prefix α , (P , σ , _) ∷ []) = (λ x → app (prefix α) (var (inj₂ (σ x)) ∷ []))
+                                  , node ((α , λ x → var (inj₂ (σ x))) ∷ [])
+  ϱ {X} {Y} (plus , (P , σP , bP) ∷ (Q , σQ , bQ) ∷ []) = (λ x → app plus (var (inj₂ (σP x)) ∷ var (inj₂ (σQ x)) ∷ []))
+                                                , node (b (children bP) ++ b (children bQ))
     where
-      go : {j : Size< ∞} → ∀[ Colist (SubTree (Fin n) Aτ j) ⇒
-             Colist (SubTree (Fin n) Aτ j)  ⇒ Colist (SubTree (Fin n) Aτ j) ]
-      go [] [] = []
-      go [] (y ∷ ys) = y ∷ ys
-      go (x ∷ xs) [] = x ∷ xs
-      go (bot ∷ xs) (bot ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
-      go (bot ∷ xs) (name x ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
-      go (bot ∷ xs) (action x x₁ ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
-      go (name x ∷ xs) (bot ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
-      go (name x ∷ xs) (name y ∷ ys)
-        = interleave (name x ∷ λ where .force → go (force xs) (name y ∷ ys))
-                     (name y ∷ λ where .force → go (name x ∷ xs) (force ys))
-      go (name x ∷ xs) (action a t ∷ ys)
-        = interleave (name x ∷ λ where .force → go (force xs) {!!})
-                     ({!!} ∷ λ where .force → go (name x ∷ xs) (force ys))
-      go (action a t ∷ xs) (bot ∷ ys) = bot ∷ λ where .force → go (force xs) (force ys)
-      go (action a t ∷ xs) (name y ∷ ys)
-        = interleave ({!!} ∷ λ where .force → go (force xs) (name y ∷ ys))
-                     (name y ∷ λ where .force → go {!!} (force ys))
-      go (action (inj₁ a) t ∷ xs) (action (inj₁ b) t' ∷ ys) with ≈-dec a b
-      ... | no a≉b = action τ (Par t t') ∷ λ where .force → go (force xs) (force ys)
-      ... | yes a≈b = interleave (action (act a) (Par t (actˢ (act b) t')) ∷ λ where .force → go (force xs) (force ys))
-                                 (action (act b) (Par (actˢ (act a) t) t) ∷ λ where .force → go (force xs) (force ys))
-      go (action (inj₁ a) t ∷ xs) (action (inj₂ tau) t' ∷ ys)
-         = interleave (action (act a) (Par t (actˢ τ t')) ∷ λ where .force → go (force xs) (force ys))
-                      (action τ (Par (actˢ (act a) t) t) ∷ λ where .force → go (force xs) (force ys))
-      go (action (inj₂ tau) t ∷ xs) (action (inj₁ b) t' ∷ ys)
-         = interleave (action τ (Par t (actˢ (act b) t')) ∷ λ where .force → go (force xs) (force ys))
-                       (action (act b) (Par (actˢ τ t) t) ∷ λ where .force → go (force xs) (force ys))
-      go (action (inj₂ tau) t ∷ xs) (action (inj₂ tau) t' ∷ ys)
-         = interleave (action τ (Par t (actˢ τ t')) ∷ λ where .force → go (force xs) (force ys))
-                      (action τ (Par (actˢ τ t) t) ∷ λ where .force → go (force xs) (force ys))
+      b : List (Aτ × Sub X Y) → List (Aτ × Sub X (Σ* (X ⊎ Y)))
+      b = Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ x)))
 
-  Res : {n : ℕ} → (a : A) → ∀[ ST n ⇒ ST n ]
-  children (Res {n} a t) = cmap go (children t)
-    where
-      go : ∀[ SubTree (Fin n) Aτ ⇒ SubTree (Fin n) Aτ ]
-      go bot = bot
-      go (name x) = name x
-      go (action (inj₁ a') t) with dec a a'
-      ... | no ¬p = action (inj₁ a') (Res a t)
-      ... | yes p = bot
-      go (action (inj₂ tau) t) = action τ (Res a t)
+  ϱ (par , (P , σP , bP) ∷ (Q , σQ , bQ) ∷ []) = {!!}
+                                               , {!!}
+  ϱ (restr β , (P , σP , bP) ∷ []) = (λ x → app (restr β) ((var (inj₂ (σP x))) ∷ []))
+                                   , node (Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ x))) (Data.List.filter (λ (α , _) → ≉-dec α (act β)) (children bP)))
 
-  ⟦_⟧ : {n : ℕ} {i : Size} (P : Proc n) → ST n i
-  ⟦ ∅ ⟧ = λ where .children → []
-  ⟦ # x ⟧ = λ where .children → [ name x ]
-  ⟦ α ∙ P ⟧   = actˢ α ⟦ P ⟧
-  ⟦ P ＋ Q ⟧   = ⟦ P ⟧ ++ˢ ⟦ Q ⟧
-  ⟦ P ∣ Q ⟧   = Par ⟦ P ⟧ ⟦ Q ⟧
-  ⟦ P ∖ a ⟧   = Res a ⟦ P ⟧
-  ⟦ P [ φ ] ⟧ = tmap ⟨ φ ⟩Aτ ⟦ P ⟧
-  ⟦ fix P ⟧   = {!!}
+  ϱ (ren φ , (P , σP , bP) ∷ []) = (λ x → app (ren φ) ((var (inj₂ (σP x))) ∷ []))
+                                 , node (Data.List.map (λ (α , σ) → (⟨ φ ⟩Aτ α) , λ x → var (inj₂ (σ x))) (children bP))
+  ϱ (fix , (P , σP , bP) ∷ []) = (λ x → app fix (var (inj₂ (σP (nothing ∷ x))) ∷ []))
+                               , node (Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ (nothing ∷ x)))) (children bP))
