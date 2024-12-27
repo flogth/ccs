@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-} -- TODO: remove
 open import Relation.Binary.Core using (Rel)
 open import Action
 open import Data.List hiding ([_])
