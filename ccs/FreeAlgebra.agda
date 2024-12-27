@@ -1,6 +1,6 @@
 open import Action
 
-open import Data.Vec
+open import Data.Vec hiding ([_])
 open import Data.Product
 open import Data.Nat
 open import Relation.Binary.Definitions using (DecidableEquality)
@@ -34,6 +34,16 @@ module FreeAlgebra {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act
 
   Sig : ∀ (X : Set ℓ) → Set ℓ
   Sig X = Σ Signature λ f → Vec X (ar f)
+
+  -- ι : Sig (∀ {n} → Proc n) → ∀ {n} → Proc n
+  -- ι (dead , _) = ∅
+  -- ι (name x , _) = # {!!}
+  -- ι (prefix α , P ∷ []) = α ∙ P
+  -- ι (plus , P ∷ Q ∷ []) = P ＋ Q
+  -- ι (par , P ∷ Q ∷ []) = P ∣ Q
+  -- ι (restr β , P ∷ []) = P ∖ β
+  -- ι (ren φ , P ∷ []) = P [ φ ]
+  -- ι (fix , P ∷ []) = fix P
 
   data Σ* (X : Set ℓ) : Set ℓ where
     var : X → Σ* X
