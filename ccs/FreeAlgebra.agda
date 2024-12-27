@@ -5,6 +5,7 @@ open import Data.Product
 open import Data.Nat
 open import Relation.Binary.Definitions using (DecidableEquality)
 open import Relation.Nullary.Decidable
+open import Effect.Functor
 
 module FreeAlgebra {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
@@ -34,6 +35,9 @@ module FreeAlgebra {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act
 
   Sig : ∀ (X : Set ℓ) → Set ℓ
   Sig X = Σ Signature λ f → Vec X (ar f)
+
+  SigF : RawFunctor Sig
+  (SigF RawFunctor.<$> f) (s , args) = s , Data.Vec.map f args
 
   -- ι : Sig (∀ {n} → Proc n) → ∀ {n} → Proc n
   -- ι (dead , _) = ∅
