@@ -36,8 +36,8 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     ... | Q' , s , eq = (P ∣ Q') , Compᵣ s , cong ((P [0↦ T ]) ∣_) eq
     subst-fix-swap (P ∣ Q) _ {T = T} (guarded-∣ gP gQ) (Sync {P' = P''} {Q' = Q''} s t) refl with subst-fix-swap P (P [0↦ T ]) gP s refl | subst-fix-swap Q (Q [0↦ T ]) gQ t refl
     ... | P' , sP , eqP | Q' , sQ , eqQ = P' ∣ Q' , Sync sP sQ , trans (cong (_∣ Q'') eqP) (cong ((P' [0↦ T ]) ∣_) eqQ)
-    subst-fix-swap (P ∖ a) _ {T = T} (guarded-∖ gP) (Res s p q) refl with subst-fix-swap P (P [0↦ T ]) gP s refl
-    ... | P' , s , eq = (P' ∖ a) , Res s p q , cong (_∖ a) eq
+    subst-fix-swap (P ∖ a) _ {T = T} (guarded-∖ gP) (Res s p) refl with subst-fix-swap P (P [0↦ T ]) gP s refl
+    ... | P' , s , eq = (P' ∖ a) , Res s p , cong (_∖ a) eq
     subst-fix-swap (P [ φ ]) _ {T = T} (guarded-ren gP) (Ren s) refl with subst-fix-swap P (P [0↦ T ]) gP s refl
     ... | P' , s , eq = (P' [ φ ]) , Ren s , cong (_[ φ ]) eq
     subst-fix-swap (fix P) _ {Q} {T} (guarded-fix gP) (Fix s) refl =
@@ -53,7 +53,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     fix⇒fix' (guarded-∣ gP _) (Compₗ s) = Compₗ (fix⇒fix' gP s)
     fix⇒fix' (guarded-∣ _ gQ) (Compᵣ s) = Compᵣ (fix⇒fix' gQ s)
     fix⇒fix' (guarded-∣ gP gQ) (Sync s p) = Sync (fix⇒fix' gP s) (fix⇒fix' gQ p)
-    fix⇒fix' (guarded-∖ gP) (Res s p q) = Res (fix⇒fix' gP s) p q
+    fix⇒fix' (guarded-∖ gP) (Res s p) = Res (fix⇒fix' gP s) p
     fix⇒fix' (guarded-ren gP) (Ren s) = Ren (fix⇒fix' gP s)
     fix⇒fix' guarded-∙ Prefix = Prefix
     fix⇒fix' {α = α} (guarded-fix gP) (Fix {P = P} s) = let (_ , step , eq) = subst-fix-swap P (P [0↦ fix P ]) gP s refl in
@@ -86,7 +86,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     step-subst (Compₗ x) = Compₗ (step-subst x)
     step-subst (Compᵣ x) = Compᵣ (step-subst x)
     step-subst (Sync x y) = Sync (step-subst x) (step-subst y)
-    step-subst (Res x p q) = Res (step-subst x) p q
+    step-subst (Res x p) = Res (step-subst x) p
     step-subst (Ren x) = Ren (step-subst x)
     step-subst {α = α} {P = fix P} {P' = P'} {σ = σ} (Fix der) = Fix (≡-subst (_⟨ α ⟩fix⇒ ⟪ σ ⟫ P') helper (step-subst der))
        where
@@ -102,7 +102,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     fix'⇒fix (Compₗ s) = Compₗ (fix'⇒fix s)
     fix'⇒fix (Compᵣ s) = Compᵣ (fix'⇒fix s)
     fix'⇒fix (Sync s p) = Sync (fix'⇒fix s) (fix'⇒fix p)
-    fix'⇒fix (Res s p q) = Res (fix'⇒fix s) p q
+    fix'⇒fix (Res s p) = Res (fix'⇒fix s) p
     fix'⇒fix (Ren s) = Ren (fix'⇒fix s)
     fix'⇒fix (Fix' s) = Fix (step-subst (fix'⇒fix s))
 
@@ -123,7 +123,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     fix'⇒step-subst refl (Compₗ x) = Compₗ (fix'⇒step-subst refl x)
     fix'⇒step-subst refl (Compᵣ x) = Compᵣ (fix'⇒step-subst refl x)
     fix'⇒step-subst refl (Sync x y) = Sync (fix'⇒step-subst refl x) (fix'⇒step-subst refl y)
-    fix'⇒step-subst refl (Res x p q) = Res (fix'⇒step-subst refl x) p q
+    fix'⇒step-subst refl (Res x p) = Res (fix'⇒step-subst refl x) p
     fix'⇒step-subst refl (Ren x) = Ren (fix'⇒step-subst refl x)
     fix'⇒step-subst {α = α} {P = fix P} {σ = σ} refl (Fix' {P' = P'} x) rewrite (sub-sub {P = P'} {σ = subst-zero (fix P)} {σ' = σ}) = (Fix rec)
        where rec : P ⟨ α , (subst-zero (fix P) ⨾ σ) ⟩⇒ ⟪ subst-zero (fix P) ⨾ σ ⟫ P'
@@ -139,7 +139,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     step-subst⇒fix' {σ = σ} (Compᵣ {P = P} x) = let (Q' , eq , s) = step-subst⇒fix' x in P ∣ Q' , cong ((⟪ σ ⟫ P) ∣_) eq , Compᵣ s
     step-subst⇒fix' (Sync x y) = let (P' , eqP , sP) = step-subst⇒fix' x in
                         let (Q' , eqQ , sQ) = step-subst⇒fix' y in P' ∣ Q' , cong₂ _∣_ eqP eqQ , Sync sP sQ
-    step-subst⇒fix' (Res {a = a} x p q) = let (P' , eq , s) = step-subst⇒fix' x in (P' ∖ a) , cong (_∖ a) eq , Res s p q
+    step-subst⇒fix' (Res {a = a} x p) = let (P' , eq , s) = step-subst⇒fix' x in (P' ∖ a) , cong (_∖ a) eq , Res s p
     step-subst⇒fix' (Ren {φ = φ} x) = let (P' , eq , s) = step-subst⇒fix' x in (P' [ φ ]) , cong (_[ φ ]) eq , Ren s
     step-subst⇒fix' {σ = σ} (Fix {P = P} x) = let (P' , eq , s) = step-subst⇒fix' x in (P' [0↦ fix P ]) , trans eq (sym (sub-sub {P = P'} {σ = subst-zero (fix P)} {σ' = σ}))  , Fix' s
 
