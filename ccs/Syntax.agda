@@ -8,7 +8,7 @@ open import Function
 module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
   open Action.Renaming A dec Action
-  open import Data.Nat public
+  open import Data.Nat
   open import Data.Fin using (Fin ; raise)
 
   infix 20 _∣_

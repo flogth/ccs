@@ -2,6 +2,7 @@ open import Action
 
 open import Data.Vec
 open import Data.Product
+open import Data.Nat
 open import Relation.Binary.Definitions using (DecidableEquality)
 open import Relation.Nullary.Decidable
 
