@@ -1,6 +1,7 @@
 open import Action
 open import Relation.Binary.Definitions using (DecidableEquality)
 open import Level renaming (suc to lsuc)
+open import Data.Nat
 
 module Step {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open import Syntax A {dec} {Action}

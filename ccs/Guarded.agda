@@ -10,6 +10,7 @@ open import Relation.Binary.Definitions using (DecidableEquality)
 open import Relation.Unary hiding (∅ ; _∖_)
 open import Relation.Nullary.Decidable
 open import Data.Bool
+open import Data.Nat
 
 module Guarded {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action

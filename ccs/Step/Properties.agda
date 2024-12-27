@@ -3,6 +3,7 @@ open import Relation.Binary.PropositionalEquality renaming (subst to ≡-subst) 
 open import Data.Fin hiding (#_)
 open import Data.Product
 open import Action
+open import Data.Nat
 
 module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action

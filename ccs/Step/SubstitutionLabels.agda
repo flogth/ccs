@@ -2,6 +2,7 @@ open import Action
 open import Relation.Binary.PropositionalEquality using (_≡_ ; _≢_)
 open import Relation.Binary.Definitions using (DecidableEquality)
 open import Data.Product
+open import Data.Nat
 
 module Step.SubstitutionLabels {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
