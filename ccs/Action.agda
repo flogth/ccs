@@ -44,6 +44,11 @@ module Action {ℓ} (A : Set ℓ) (dec : DecidableEquality A) where
     _≉_ : Aτ → Aτ → Set ℓ
     a ≉ b = a ≈ b → ⊥
 
+    ≉-dec : Decidable _≉_
+    ≉-dec x y with ≈-dec x y
+    ... | yes p = no (λ q → q p)
+    ... | no ¬p = yes ¬p
+
   module Renaming (Action : Act) where
     open Act Action
     record IsRenaming (f : A → A) : Set ℓ where
