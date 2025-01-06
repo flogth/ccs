@@ -53,6 +53,19 @@ module FreeAlgebra {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act
     var : X → Σ* X
     app : (f : Signature) → Vec (Σ* X) (ar f) → Σ* X
 
+  Σ*F : RawFunctor Σ*
+  (Σ*F RawFunctor.<$> f) x = go f x
+    where go : ∀ {A B} → (A → B) → (Σ* A) → (Σ* B)
+          go f (var x) = var (f x)
+          go f (app dead []) = app dead []
+          go f (app (name x) []) = app (name x) []
+          go f (app (prefix α) (P ∷ [])) = app (prefix α) (go f P ∷ [])
+          go f (app plus (P ∷ Q ∷ [])) = app plus (go f P ∷ go f Q ∷ [])
+          go f (app par (P ∷ Q ∷ [])) = app par (go f P ∷ go f Q ∷ [])
+          go f (app (restr β) (P ∷ [])) = app (restr β) (go f P ∷ [])
+          go f (app (ren φ) (P ∷ [])) = app (ren φ) (go f P ∷ [])
+          go f (app fix (P ∷ [])) = app fix (go f P ∷ [])
+
   Σ*-alg : ∀ {X : Set ℓ} → Sig (Σ* X) → Σ* X
   Σ*-alg (f , args) = app f args
 
