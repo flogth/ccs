@@ -10,6 +10,9 @@ open import Data.Product
 open import Data.Sum
 open import Data.Vec hiding (_++_)
 open import Data.Nat
+open import Data.Fin using (toℕ ; fromℕ)
+open import Function
+open import Effect.Functor
 
 module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
@@ -82,3 +85,50 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
                                  , node (Data.List.map (λ (α , σ) → (⟨ φ ⟩Aτ α) , λ x → var (inj₂ (σ x))) (children bP))
   ϱ (fix , (P , σP , bP) ∷ []) = (λ x → app fix (var (inj₂ (σP (nothing ∷ x))) ∷ []))
                                , node (Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ (nothing ∷ x)))) (children bP))
+
+  μΣ : Set ℓ
+  μΣ = Σ ℕ λ n → Proc n
+
+  ι : Sig μΣ → μΣ
+  ι (dead , _) = 0 , ∅
+  ι (name x , _) = suc x , # fromℕ x
+  ι (prefix α , (n , P) ∷ []) = n , (α ∙ P)
+  ι (plus , (n , P) ∷ (m , Q) ∷ []) = {!!}
+  ι (par , P ∷ Q ∷ []) = {!!}
+  ι (restr β , (n , P) ∷ []) = n , P ∖ β
+  ι (ren φ , (n , P) ∷ []) = n , Syntax._[_] P φ
+  ι (fix , (n , P) ∷ []) = n , fix (_↑ P)
+
+  ini : ∀ {X : Set ℓ} → ((Sig X) → X) → μΣ → X
+  ini x (n , ∅) = x (dead , [])
+  ini x (n , # y) = x (name {!!} , [])
+  ini x (n , α ∙ P) = x (prefix α , (ini x (n , P)) ∷ [])
+  ini x (n , P ＋ Q) = x (plus , ((ini x (n , P)) ∷ (ini x (n , Q)) ∷ []))
+  ini x (n , P ∣ Q) = x (par , (ini x (n , P) ∷ ini x (n , Q) ∷ []))
+  ini x (n , (P ∖ a)) = x (restr a , ((ini x (n , P)) ∷ []))
+  ini x (n , (P [ φ ])) = x (ren φ , ((ini x (n , P)) ∷ []))
+  ini x (n , fix P) = x (fix , ((ini x (suc n , P)) ∷ []))
+
+  ιⁱ : μΣ → Sig μΣ
+  ιⁱ (n , ∅) = dead , []
+  ιⁱ (n , # x) = name (toℕ x) , []
+  ιⁱ (n , α ∙ P) = prefix α , (n , P) ∷ []
+  ιⁱ (n , P ＋ Q) = plus , (n , P) ∷ (n , Q) ∷ []
+  ιⁱ (n , P ∣ Q) = par , (n , P) ∷ (n , Q) ∷ []
+  ιⁱ (n , (P ∖ a)) = restr a , (n , P) ∷ []
+  ιⁱ (n , (P [ φ ])) = ren φ , (n , P) ∷ []
+  ιⁱ (n , fix P) = fix , ((suc n) , P) ∷ []
+
+  γ : μΣ → B μΣ μΣ
+  γ = proj₂ ∘ ini {μΣ × B μΣ μΣ} (bar ∘ foo)
+    where
+      foo : Sig (μΣ × B μΣ μΣ) → μΣ × B μΣ (Σ* (μΣ ⊎ μΣ))
+      foo = < ι ∘ (proj₁ <$>_) , ϱ {μΣ} {μΣ} >
+        where open RawFunctor SigF
+
+      bar : μΣ × B μΣ (Σ* (μΣ ⊎ μΣ)) → μΣ × B μΣ μΣ
+      bar = Data.Product.map₂ {!!}
+        where open RawFunctor Σ*F
+              ∇ : ∀ {X : Set ℓ} → X ⊎ X → X
+              ∇ (inj₁ x) = x
+              ∇ (inj₂ y) = y

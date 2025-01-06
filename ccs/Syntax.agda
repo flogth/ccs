@@ -83,6 +83,9 @@ module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A de
   _[1↦_] : ∀ {n} → Proc (suc (suc n)) → Proc n → Proc (suc n)
   _[1↦_] {n} P Q = subst (exts (subst-zero Q)) P
 
+  _↑ : ∀ {n} → Proc n → Proc (suc n)
+  P ↑ = rename Fin.suc P
+
   Subst : ℕ → ℕ → Set ℓ
   Subst n m = Fin n → Proc m
 
