@@ -31,11 +31,21 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
 
   open FST
 
+  FSTF : RawFunctor FST
+  (FSTF RawFunctor.<$> f) x .children = Data.List.map f (children x)
+
   Sub : ∀ (X Y : Set ℓ) → Set ℓ
   Sub X Y = List (Maybe X) → Y
 
+  submap₂ : ∀ {X Y Z : Set ℓ} → (f : Y → Z)  → Sub X Y → Sub X Z
+  submap₂ f σ = f ∘ σ
+
   B : ∀ (X Y : Set ℓ) → Set ℓ
   B X Y = Sub X Y × FST (Aτ × Sub X Y)
+
+  bmap₂ : ∀ {X Y Z : Set ℓ} → (f : Y → Z)  → B X Y → B X Z
+  bmap₂ f (σ , b) = submap₂ f σ , (tmap (Data.Product.map₂ (submap₂ f)) b)
+    where open RawFunctor FSTF renaming (_<$>_ to tmap)
 
   ϱ : ∀ {X Y : Set ℓ} → Sig (X × B X Y) → B X (Σ* (X ⊎ Y))
   ϱ (dead , []) = (λ _ → app dead [])
@@ -138,7 +148,7 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
         where open RawFunctor SigF
 
       bar : μΣ × B μΣ (Σ* (μΣ ⊎ μΣ)) → μΣ × B μΣ μΣ
-      bar = Data.Product.map₂ {!!}
+      bar = Data.Product.map₂ (bmap₂ (lift ι id ∘ (∇ <$>_)))
         where open RawFunctor Σ*F
               ∇ : ∀ {X : Set ℓ} → X ⊎ X → X
               ∇ (inj₁ x) = x
