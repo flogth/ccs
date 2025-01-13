@@ -10,9 +10,11 @@ open import Data.Product
 open import Data.Sum
 open import Data.Vec hiding (_++_)
 open import Data.Nat
+open import Data.Nat.Properties
 open import Data.Fin using (toℕ ; fromℕ)
 open import Function
 open import Effect.Functor
+open import Relation.Binary.PropositionalEquality renaming (subst to ≡-subst)
 
 module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A dec} where
   open Act Action
@@ -99,21 +101,24 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
   ι (dead , _) = 0 , ∅
   ι (name x , _) = suc x , # fromℕ x
   ι (prefix α , (n , P) ∷ []) = n , (α ∙ P)
-  ι (plus , (n , P) ∷ (m , Q) ∷ []) = {!!}
-  ι (par , P ∷ Q ∷ []) = {!!}
+  ι (plus , (n , P) ∷ (m , Q) ∷ []) = (n ⊔ m) , (max-cast n m P) ＋ ≡-subst Proc (⊔-comm m n) (max-cast m n Q)
+  ι (par , (n , P) ∷ (m , Q) ∷ []) = n ⊔ m , (max-cast n m P) ∣ ≡-subst Proc (⊔-comm m n) (max-cast m n Q)
   ι (restr β , (n , P) ∷ []) = n , P ∖ β
   ι (ren φ , (n , P) ∷ []) = n , Syntax._[_] P φ
   ι (fix , (n , P) ∷ []) = n , fix (_↑ P)
 
+  ini' : ∀ {X : Set ℓ} → ((Sig X) → X) → (n : ℕ) → Proc n → X
+  ini' x n ∅ = x (dead , [])
+  ini' x n (# y) = x (name n , [])
+  ini' x n (α ∙ P) = x (prefix α , (ini' x n P) ∷ [])
+  ini' x n (P ＋ Q) = x (plus , ((ini' x n P) ∷ (ini' x n Q) ∷ []))
+  ini' x n (P ∣ Q) = x (par , (ini' x n P ∷ ini' x n Q ∷ []))
+  ini' x n (P ∖ a) = x (restr a , (ini' x n P) ∷ [])
+  ini' x n (P [ φ ]) = x (ren φ , (ini' x n P) ∷ [])
+  ini' x n (fix P) = x (fix , (ini' x (suc n) P ∷ []))
+
   ini : ∀ {X : Set ℓ} → ((Sig X) → X) → μΣ → X
-  ini x (n , ∅) = x (dead , [])
-  ini x (n , # y) = x (name {!!} , [])
-  ini x (n , α ∙ P) = x (prefix α , (ini x (n , P)) ∷ [])
-  ini x (n , P ＋ Q) = x (plus , ((ini x (n , P)) ∷ (ini x (n , Q)) ∷ []))
-  ini x (n , P ∣ Q) = x (par , (ini x (n , P) ∷ ini x (n , Q) ∷ []))
-  ini x (n , (P ∖ a)) = x (restr a , ((ini x (n , P)) ∷ []))
-  ini x (n , (P [ φ ])) = x (ren φ , ((ini x (n , P)) ∷ []))
-  ini x (n , fix P) = x (fix , ((ini x (suc n , P)) ∷ []))
+  ini x (n , P) = ini' x n P
 
   ιⁱ : μΣ → Sig μΣ
   ιⁱ (n , ∅) = dead , []
