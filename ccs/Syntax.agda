@@ -9,6 +9,7 @@ module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A de
   open Act Action
   open Action.Renaming A dec Action
   open import Data.Nat
+  open import Data.Nat.Properties
   open import Data.Fin using (Fin ; raise)
 
   infix 20 _∣_
@@ -300,3 +301,17 @@ module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A de
       ⟪ σ ⟫ (⟪ Q ⊙ ids ⟫ P)
     ≡⟨ cong ⟪ σ ⟫ (sym (cong-sub {P = P} subst-Z-cons-ids refl)) ⟩
     ⟪ σ ⟫ (P [0↦ Q ]) ∎
+
+
+  fin-cast : (n m : ℕ) → Fin n → Fin (n ⊔ m)
+  fin-cast n m x = Data.Fin.inject≤ x (m≤m⊔n n m)
+
+  max-cast : (n m : ℕ) → Proc n → Proc (n ⊔ m)
+  max-cast n m ∅ = ∅
+  max-cast n m (# x) = # (fin-cast n m x)
+  max-cast n m (α ∙ P) = α ∙ max-cast n m P
+  max-cast n m (P ＋ Q) = (max-cast n m P) ＋ (max-cast n m Q)
+  max-cast n m (P ∣ Q) = (max-cast n m P) ∣ max-cast n m Q
+  max-cast n m (P ∖ a) = (max-cast n m P) ∖ a
+  max-cast n m (P [ φ ]) = (max-cast n m P) [ φ ]
+  max-cast n m (fix P) = fix (max-cast (suc n) (suc m) P)
