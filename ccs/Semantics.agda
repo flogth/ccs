@@ -49,9 +49,9 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
           open RawFunctor (SubF X) renaming (_<$>_ to submap₂)
 
   ϱ : ∀ {X Y : Set ℓ} → Sig (X × B X Y) → B X (Σ* (X ⊎ Y))
-  ϱ (dead , []) = (λ _ → app dead [])
+  ϱ dead = (λ _ → app dead)
                   , (node [])
-  ϱ (name m , []) = (λ x → lookupM m x (app (name m) []) λ P → app fix (var (inj₁ P) ∷ []))
+  ϱ (name m) = (λ x → lookupM m x (app (name m)) λ P → app (fix (var (inj₁ P))))
                     , (node [])
     where
       lookupM : ∀ {A C : Set ℓ} → ℕ → List (Maybe A) → C → (A → C) → C
@@ -61,21 +61,21 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
       lookupM (suc n) [] c f = c
       lookupM (suc n) (x ∷ xs) c f = lookupM n xs c f
 
-  ϱ (prefix α , (P , σ , _) ∷ [])
-    = (λ x → app (prefix α) (var (inj₂ (σ x)) ∷ []))
+  ϱ (prefix α (P , σ , _))
+    = (λ x → app (prefix α (var (inj₂ (σ x)))))
       , node ((α , λ x → var (inj₂ (σ x))) ∷ [])
-  ϱ {X} {Y} (plus , (P , σP , bP) ∷ (Q , σQ , bQ) ∷ [])
-    = (λ x → app plus (var (inj₂ (σP x)) ∷ var (inj₂ (σQ x)) ∷ []))
+  ϱ {X} {Y} (plus (P , σP , bP) (Q , σQ , bQ))
+    = (λ x → app (plus (var (inj₂ (σP x))) (var (inj₂ (σQ x)))))
       , node (b (children bP) ++ b (children bQ))
     where
       b : List (Aτ × Sub X Y) → List (Aτ × Sub X (Σ* (X ⊎ Y)))
       b = Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ x)))
 
-  ϱ {X} {Y} (par , (P , σP , bP) ∷ (Q , σQ , bQ) ∷ [])
-    = (λ x → app par (var (inj₂ (σP x)) ∷ var (inj₂ (σQ x)) ∷ []))
-      , node (Data.List.map (λ (α , σ) → α , λ x → app par (var (inj₂ (σ x)) ∷ var (inj₂ (σQ x)) ∷ [])) (children bP)
-              ++ Data.List.map (λ (α , σ) → α , λ x → app par (var (inj₂ (σP x)) ∷ var (inj₂ (σ x)) ∷ [])) (children bQ)
-              ++ zipPWith ≈fst-dec (λ (_ , σ) (_ , σ') → τ , λ x → app par (var (inj₂ (σ x)) ∷ var (inj₂ (σ' x)) ∷ [])) (children bP) (children bQ))
+  ϱ {X} {Y} (par (P , σP , bP) (Q , σQ , bQ))
+    = (λ x → app (par (var (inj₂ (σP x))) (var (inj₂ (σQ x)))))
+      , node (Data.List.map (λ (α , σ) → α , λ x → app (par (var (inj₂ (σ x))) (var (inj₂ (σQ x))))) (children bP)
+              ++ Data.List.map (λ (α , σ) → α , λ x → app (par (var (inj₂ (σP x))) (var (inj₂ (σ x))))) (children bQ)
+              ++ zipPWith ≈fst-dec (λ (_ , σ) (_ , σ') → τ , λ x → app (par (var (inj₂ (σ x))) (var (inj₂ (σ' x))))) (children bP) (children bQ))
     where
       _>>=_ : ∀ {A B : Set ℓ} → List A → (A → List B) → List B
       m >>= g = concatMap g m
@@ -94,52 +94,52 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
       zipPWith : ∀ {A B C : Set ℓ} → {P : A → B → Set ℓ} → Decidable P → (f : A → B → C) → List A → List B → List C
       zipPWith p f xs ys = xs >>= λ x → ys >>= λ y → case p (λ a b → f a b ∷ []) [] x y
 
-  ϱ (restr β , (P , σP , bP) ∷ [])
-    = (λ x → app (restr β) ((var (inj₂ (σP x))) ∷ []))
+  ϱ (restr β (P , σP , bP))
+    = (λ x → app (restr β (var (inj₂ (σP x)))))
       , node (Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ x))) (Data.List.filter (λ (α , _) → ≉-dec α (act β)) (children bP)))
 
-  ϱ (ren φ , (P , σP , bP) ∷ [])
-    = (λ x → app (ren φ) ((var (inj₂ (σP x))) ∷ []))
+  ϱ (ren φ (P , σP , bP))
+    = (λ x → app (ren φ (var (inj₂ (σP x)))))
       , node (Data.List.map (λ (α , σ) → (⟨ φ ⟩Aτ α) , λ x → var (inj₂ (σ x))) (children bP))
-  ϱ (fix , (P , σP , bP) ∷ [])
-    = (λ x → app fix (var (inj₂ (σP (nothing ∷ x))) ∷ []))
+  ϱ (fix (P , σP , bP))
+    = (λ x → app (fix (var (inj₂ (σP (nothing ∷ x))))))
       , node (Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ (nothing ∷ x)))) (children bP))
 
   μΣ : Set ℓ
   μΣ = Σ ℕ λ n → Proc n
 
   ι : Sig μΣ → μΣ
-  ι (dead , _) = 0 , ∅
-  ι (name x , _) = suc x , # fromℕ x
-  ι (prefix α , (n , P) ∷ []) = n , (α ∙ P)
-  ι (plus , (n , P) ∷ (m , Q) ∷ []) = (n ⊔ m) , (max-cast n m P) ＋ ≡-subst Proc (⊔-comm m n) (max-cast m n Q)
-  ι (par , (n , P) ∷ (m , Q) ∷ []) = n ⊔ m , (max-cast n m P) ∣ ≡-subst Proc (⊔-comm m n) (max-cast m n Q)
-  ι (restr β , (n , P) ∷ []) = n , P ∖ β
-  ι (ren φ , (n , P) ∷ []) = n , Syntax._[_] P φ
-  ι (fix , (n , P) ∷ []) = n , fix (_↑ P)
+  ι dead = 0 , ∅
+  ι (name x) = suc x , # fromℕ x
+  ι (prefix α (n , P)) = n , (α ∙ P)
+  ι (plus (n , P) (m , Q)) = (n ⊔ m) , (max-cast n m P) ＋ ≡-subst Proc (⊔-comm m n) (max-cast m n Q)
+  ι (par (n , P) (m , Q) ) = n ⊔ m , (max-cast n m P) ∣ ≡-subst Proc (⊔-comm m n) (max-cast m n Q)
+  ι (restr β (n , P)) = n , P ∖ β
+  ι (ren φ (n , P)) = n , Syntax._[_] P φ
+  ι (fix (n , P)) = n , fix (_↑ P)
 
   ini' : ∀ {X : Set ℓ} → ((Sig X) → X) → (n : ℕ) → Proc n → X
-  ini' x n ∅ = x (dead , [])
-  ini' x n (# y) = x (name n , [])
-  ini' x n (α ∙ P) = x (prefix α , (ini' x n P) ∷ [])
-  ini' x n (P ＋ Q) = x (plus , ((ini' x n P) ∷ (ini' x n Q) ∷ []))
-  ini' x n (P ∣ Q) = x (par , (ini' x n P ∷ ini' x n Q ∷ []))
-  ini' x n (P ∖ a) = x (restr a , (ini' x n P) ∷ [])
-  ini' x n (P [ φ ]) = x (ren φ , (ini' x n P) ∷ [])
-  ini' x n (fix P) = x (fix , (ini' x (suc n) P ∷ []))
+  ini' x n ∅ = x dead
+  ini' x n (# y) = x (name n)
+  ini' x n (α ∙ P) = x (prefix α (ini' x n P))
+  ini' x n (P ＋ Q) = x (plus (ini' x n P) (ini' x n Q))
+  ini' x n (P ∣ Q) = x (par (ini' x n P) (ini' x n Q))
+  ini' x n (P ∖ a) = x (restr a (ini' x n P))
+  ini' x n (P [ φ ]) = x (ren φ (ini' x n P))
+  ini' x n (fix P) = x (fix (ini' x (suc n) P))
 
   ini : ∀ {X : Set ℓ} → ((Sig X) → X) → μΣ → X
   ini x (n , P) = ini' x n P
 
   ιⁱ : μΣ → Sig μΣ
-  ιⁱ (n , ∅) = dead , []
-  ιⁱ (n , # x) = name (toℕ x) , []
-  ιⁱ (n , α ∙ P) = prefix α , (n , P) ∷ []
-  ιⁱ (n , P ＋ Q) = plus , (n , P) ∷ (n , Q) ∷ []
-  ιⁱ (n , P ∣ Q) = par , (n , P) ∷ (n , Q) ∷ []
-  ιⁱ (n , (P ∖ a)) = restr a , (n , P) ∷ []
-  ιⁱ (n , (P [ φ ])) = ren φ , (n , P) ∷ []
-  ιⁱ (n , fix P) = fix , (suc n , P) ∷ []
+  ιⁱ (n , ∅) = dead
+  ιⁱ (n , # x) = name (toℕ x)
+  ιⁱ (n , α ∙ P) = prefix α (n , P)
+  ιⁱ (n , P ＋ Q) = plus (n , P) (n , Q)
+  ιⁱ (n , P ∣ Q) = par (n , P) (n , Q)
+  ιⁱ (n , (P ∖ a)) = restr a (n , P)
+  ιⁱ (n , (P [ φ ])) = ren φ (n , P)
+  ιⁱ (n , fix P) = fix (suc n , P)
 
   γ : μΣ → B μΣ μΣ
   γ = proj₂ ∘ ini {μΣ × B μΣ μΣ} (bar ∘ foo)
