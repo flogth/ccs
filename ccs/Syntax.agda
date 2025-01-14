@@ -315,3 +315,7 @@ module Syntax {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A de
   max-cast n m (P ∖ a) = (max-cast n m P) ∖ a
   max-cast n m (P [ φ ]) = (max-cast n m P) [ φ ]
   max-cast n m (fix P) = fix (max-cast (suc n) (suc m) P)
+
+  open import Relation.Binary.PropositionalEquality renaming (subst to ≡-subst)
+  max-cast' : (n m : ℕ) → Proc m → Proc (n ⊔ m)
+  max-cast' n m P = ≡-subst Proc (⊔-comm m n) (max-cast m n P)
