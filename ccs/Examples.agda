@@ -1,7 +1,13 @@
+{-# OPTIONS --guardedness #-}
 open import Relation.Binary.PropositionalEquality
 open import Relation.Binary.Definitions using (DecidableEquality)
 open import Relation.Nullary.Decidable
 open import Data.Fin using (zero ; suc)
+open import Function.Bundles
+open import Data.Nat
+import Data.Fin
+open import Data.Product
+open import Data.List
 
 import Action
 
@@ -13,23 +19,19 @@ module Examples where
     inb : A
     outb : A
 
-  dec : DecidableEquality A
-  dec ina ina = yes refl
-  dec ina outa = no (λ ())
-  dec ina inb = no (λ ())
-  dec ina outb = no (λ ())
-  dec outa ina = no (λ ())
-  dec outa outa = yes refl
-  dec outa inb = no (λ ())
-  dec outa outb = no (λ ())
-  dec inb ina = no (λ ())
-  dec inb outa = no (λ ())
-  dec inb inb = yes refl
-  dec inb outb = no (λ ())
-  dec outb ina = no (λ ())
-  dec outb outa = no (λ ())
-  dec outb inb = no (λ ())
-  dec outb outb = yes refl
+  Ainj : Injection (setoid A) (setoid ℕ)
+  Ainj .Injection.to ina = 0
+  Ainj .Injection.to outa = 1
+  Ainj .Injection.to inb = 2
+  Ainj .Injection.to outb = 3
+  Ainj .Injection.cong refl = refl
+  Ainj .Injection.injective {ina} {ina} _ = refl
+  Ainj .Injection.injective {outa} {outa} _ = refl
+  Ainj .Injection.injective {inb} {inb} _ = refl
+  Ainj .Injection.injective {outb} {outb} _ = refl
+
+  _≈A_ : DecidableEquality A
+  _≈A_ = via-injection Ainj _≟_
 
   comp : A → A
   comp ina = outa
@@ -43,28 +45,35 @@ module Examples where
   compp inb = refl
   compp outb = refl
 
-  open Action A dec
+  open Action A _≈A_
 
   actA : Act
   Act.comp actA = comp
   Act.compp actA = compp
 
   open Action.Act actA
-  open import Syntax A {dec} {actA}
-  open import Step A {dec} {actA}
+  open import Syntax A {_≈A_} {actA}
+  open import Step.Standard A {_≈A_} {actA}
 
   foo : Proc 0
   foo = fix ((act ina) ∙ ∅ ＋ (act outa) ∙ (# zero))
 
   foostepl : foo ⟨ act ina ⟩fix⇒ ∅
-  foostepl = Fix (Step (Sumₗ Prefix))
+  foostepl = Fix (Sumₗ Prefix)
 
   foostepr : foo ⟨ act outa ⟩fix⇒ foo
-  foostepr = Fix (Step (Sumᵣ Prefix))
-
+  foostepr = Fix (Sumᵣ Prefix)
 
   bar : Proc 1
   bar = (act ina) ∙ (# zero) ∣ (act outa) ∙ ∅
 
   barstep : bar ⟨ τ ⟩fix⇒ (# zero) ∣ ∅
-  barstep = Step (Sync Prefix Prefix)
+  barstep = Sync Prefix Prefix
+
+  open import Semantics A {_≈A_} {actA}
+
+  _ : γ (0 , (act ina) ∙ ((act inb) ∙ ∅)) ≡ ((λ x → 0 , {!!}) , (node (((act ina) , λ x → {!!}) ∷ [])))
+  _ = {!!}
+
+  _ : γ (0 , fix (fix ((act ina) ∙ (# suc zero)))) ≡ ({!!} , (node ({!!} ∷ {!!})))
+  _ = {!!}
