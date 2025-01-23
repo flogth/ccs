@@ -58,7 +58,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     fix⇒fix' (guarded-ren gP) (Ren s) = Ren (fix⇒fix' gP s)
     fix⇒fix' guarded-∙ Prefix = Prefix
     fix⇒fix' {α = α} (guarded-fix gP) (Fix {P = P} s) = let (_ , step , eq) = subst-fix-swap P (P [0↦ fix P ]) gP s refl in
-      ≡-subst (λ h → fix P ⟨ α ⟩fix'⇒ h) (sym eq) (Fix' (fix⇒fix' gP step))
+      ≡-subst (fix P ⟨ α ⟩fix'⇒_) (sym eq) (Fix' (fix⇒fix' gP step))
 
     -- this direction does indeed hold only for guarded terms:
     module counter-example (α : A) where
