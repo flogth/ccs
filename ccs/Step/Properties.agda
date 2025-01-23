@@ -15,6 +15,12 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
   _⇔_ : ∀ {ℓ} (A B : Set ℓ) → Set ℓ
   A ⇔ B = (A → B) × (B → A)
 
+  ⇔-sym :  ∀ {ℓ} {A B : Set ℓ} → A ⇔ B → B ⇔ A
+  ⇔-sym (f , g) = g , f
+
+  ⇔-trans : ∀ {ℓ} {A B C : Set ℓ} → A ⇔ B → B ⇔ C → A ⇔ C
+  ⇔-trans (f , g) (h , j) = (λ x → h (f x)) , (λ x → g (j x))
+
   -- Equivalence of the two fixpoint semantics
   module Standard⇔Alternative where
 
@@ -147,3 +153,15 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
     subst-step⇔fix' :  ∀ {n m} {α : Aτ} {P : Proc n} {P'' : Proc m} {σ : Subst n m} →
       (P ⟨ α , σ ⟩⇒ P'') ⇔ (∃ λ P' → P'' ≡ ⟪ σ ⟫ P' × P ⟨ α ⟩fix'⇒ P')
     subst-step⇔fix' = step-subst⇒fix' , (λ x → fix'⇒step-subst (proj₁ (proj₂ x)) (proj₂ (proj₂ x)))
+
+  module Standard⇔SubstitutionLabels where
+    open Alternative⇔SubstitutionLabels
+    open Standard⇔Alternative
+    open import Step.Standard A {dec} {Action}
+    open import Step.SubstitutionLabels A {dec} {Action} renaming (_⟨_⟩⇒_ to _⟨_⟩subst⇒_)
+
+    subst-step⇔fix :  ∀ {n m} {α : Aτ} {P : Proc n} {P'' : Proc m} {σ : Subst n m} →
+      guarded P →
+      (P ⟨ α , σ ⟩subst⇒ P'') ⇔ (∃ λ P' → P'' ≡ ⟪ σ ⟫ P' × P ⟨ α ⟩fix⇒ P')
+    subst-step⇔fix gP = (λ s → let (P , eq , ss) = step-subst⇒fix' s in P , eq , fix'⇒fix ss)
+                        , λ (P , eq , ss) → fix'⇒step-subst eq (fix⇒fix' gP ss)
