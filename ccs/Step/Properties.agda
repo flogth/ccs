@@ -152,7 +152,7 @@ module Step.Properties {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action :
 
     subst-step⇔fix' :  ∀ {n m} {α : Aτ} {P : Proc n} {P'' : Proc m} {σ : Subst n m} →
       (P ⟨ α , σ ⟩⇒ P'') ⇔ (∃ λ P' → P'' ≡ ⟪ σ ⟫ P' × P ⟨ α ⟩fix'⇒ P')
-    subst-step⇔fix' = step-subst⇒fix' , (λ x → fix'⇒step-subst (proj₁ (proj₂ x)) (proj₂ (proj₂ x)))
+    subst-step⇔fix' = step-subst⇒fix' , (λ (_ , eq , s) → fix'⇒step-subst eq s)
 
   module Standard⇔SubstitutionLabels where
     open Alternative⇔SubstitutionLabels
