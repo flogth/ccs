@@ -62,14 +62,14 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
       lookupM (suc n) (x ∷ xs) c f = lookupM n xs c f
 
   ϱ (prefix α (P , σ , _))
-    = (λ x → app (prefix α (var (inj₂ (σ x)))))
-      , node ((α , λ x → var (inj₂ (σ x))) ∷ [])
+    = (app ∘ prefix α ∘ var ∘ inj₂ ∘ σ)
+      , node ((α , var ∘ inj₂ ∘ σ) ∷ [])
   ϱ {X} {Y} (plus (P , σP , bP) (Q , σQ , bQ))
     = (λ x → app (plus (var (inj₂ (σP x))) (var (inj₂ (σQ x)))))
       , node (b (children bP) ++ b (children bQ))
     where
       b : List (Aτ × Sub X Y) → List (Aτ × Sub X (Σ* (X ⊎ Y)))
-      b = Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ x)))
+      b = Data.List.map (λ (α , σ) → α , var ∘ inj₂ ∘ σ)
 
   ϱ {X} {Y} (par (P , σP , bP) (Q , σQ , bQ))
     = (λ x → app (par (var (inj₂ (σP x))) (var (inj₂ (σQ x)))))
@@ -95,11 +95,11 @@ module Semantics {ℓ} (A : Set ℓ) {dec : DecidableEquality A} {Action : Act A
       zipPWith p f xs ys = xs >>= λ x → ys >>= λ y → case p (λ a b → f a b ∷ []) [] x y
 
   ϱ (restr β (P , σP , bP))
-    = (λ x → app (restr β (var (inj₂ (σP x)))))
-      , node (Data.List.map (λ (α , σ) → α , λ x → var (inj₂ (σ x))) (Data.List.filter (λ (α , _) → ≉-dec α (act β)) (children bP)))
+    = (app ∘ restr β ∘ var ∘ inj₂ ∘ σP)
+      , node (Data.List.map (λ (α , σ) → α , var ∘ inj₂ ∘ σ) (Data.List.filter (λ (α , _) → ≉-dec α (act β)) (children bP)))
 
   ϱ (ren φ (P , σP , bP))
-    = (λ x → app (ren φ (var (inj₂ (σP x)))))
+    = (app ∘ ren φ ∘ var ∘ inj₂ ∘ σP)
       , node (Data.List.map (λ (α , σ) → (⟨ φ ⟩Aτ α) , λ x → var (inj₂ (σ x))) (children bP))
   ϱ (fix (P , σP , bP))
     = (λ x → app (fix (var (inj₂ (σP (nothing ∷ x))))))
