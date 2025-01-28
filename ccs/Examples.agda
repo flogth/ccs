@@ -71,9 +71,14 @@ module Examples where
   barstep = Sync Prefix Prefix
 
   open import Semantics A {_≈A_} {actA}
+  import Effect.Functor
+  open Effect.Functor.RawFunctor FSTF
 
-  _ : γ (0 , (act ina) ∙ ((act inb) ∙ ∅)) ≡ ((λ x → 0 , {!!}) , (node (((act ina) , λ x → {!!}) ∷ [])))
-  _ = {!!}
+  _ :  FST.children ((proj₁ <$>_) (proj₂ (γ (0 , (act ina) ∙ ((act inb) ∙ ∅))))) ≡ FST.children (node (((act ina)) ∷ []))
+  _ = refl
 
-  _ : γ (0 , fix (fix ((act ina) ∙ (# suc zero)))) ≡ ({!!} , (node ({!!} ∷ {!!})))
-  _ = {!!}
+  P : Proc 0
+  P = fix (fix ((act ina) ∙ (# suc zero)))
+
+  bP : B μΣ μΣ
+  bP = γ (0 , P)
