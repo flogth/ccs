@@ -1,0 +1,8 @@
+* An Agda formalization of the Calculus of Communicating Systems
+This is a formalization of [[https://en.wikipedia.org/wiki/Calculus_of_communicating_systems][CCS]], done for my master's thesis
+"Bisimulation-Based Process Algebra in Higher-Order GSOS".  It
+implements a version of the calculus with finite sums and arbitrary
+fixpoints. Variables are represented via de Bruijn indices, in a style
+akin to [[https://plfa.github.io/][Programming Language Foundations in Agda]]. The main result is
+the definition of a coalgebra $\gamma$ with the HO-GSOS framework
+layed out in [[https://arxiv.org/abs/2405.16708][Higher-Order Mathematical Operational Semantics]].
