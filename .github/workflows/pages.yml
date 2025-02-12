@@ -1,4 +1,5 @@
 name: Build and Deploy Agda Docs with Nix Flake
+
 on:
   push:
     branches:
@@ -22,25 +23,32 @@ jobs:
         nix build
         mkdir -p output
         cp -r result/* output
-  deploy:
-    # Add a dependency to the build job
-    needs: build
 
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: agda-docs
+        path: output
+
+  deploy:
+    needs: build
     permissions:
       pages: write
       id-token: write
-      
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    
+
     runs-on: ubuntu-latest
     steps:
-      - name: Upload Artifact
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: agda-docs
+          path: output
+
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'output'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
