@@ -36,6 +36,10 @@ jobs:
     
     runs-on: ubuntu-latest
     steps:
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'output'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
