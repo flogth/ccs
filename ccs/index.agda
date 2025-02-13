@@ -9,4 +9,5 @@ import Step.Standard
 import Step.Alternative
 import Step.SubstitutionLabels
 import Step.Properties
+import FreeAlgebra
 import Semantics
